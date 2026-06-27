@@ -1,0 +1,9 @@
+sequenceDiagram
+    participant Rule as OISD Rule Engine
+    participant WS as World State
+    participant Audit as Audit Log
+
+    WS->>Rule: State Update (Worker in Confined Space)
+    Rule->>Rule: Check PTW (Permit to Work)
+    Rule-->>WS: Invalid Permit Detected
+    Rule->>Audit: Log Violation (CMP-102)

@@ -1,0 +1,25 @@
+name: Frontend Lint
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+    - name: Install pnpm
+      run: npm install -g pnpm
+    - name: Install dependencies
+      run: cd frontend && pnpm install
+    - name: Run ESLint
+      run: cd frontend && pnpm run lint
+    - name: Run Prettier
+      run: cd frontend && npx prettier --check .

@@ -1,0 +1,37 @@
+graph TD
+    subgraph UI[Mission Control Frontend]
+        MC[Mission Control Core]
+        RP[Risk Panel]
+        PL[Planner]
+        VP[Vision Panel]
+    end
+    
+    subgraph BE[Sentinel Backend API]
+        API[FastAPI Gateway]
+        WS[WebSocket Manager]
+    end
+    
+    subgraph Intelligence[AI Engines]
+        VE[Vision Engine]
+        CE[Compliance Engine]
+        RE[Risk Engine]
+        CH[Chronos Prediction]
+        PE[Planner Engine]
+    end
+    
+    subgraph Data[Data Persistence & State]
+        PG[(PostgreSQL<br/>Audit/Config)]
+        RD[(Redis<br/>World State)]
+        NJ[(Neo4j<br/>Hazard Graph)]
+        QD[(Qdrant<br/>Vectors)]
+    end
+    
+    subgraph Bus[Message Broker]
+        KF[Kafka Event Bus]
+    end
+
+    UI <-->|REST / WS| BE
+    BE -->|Commands| Intelligence
+    Intelligence -->|Events| KF
+    KF -->|Stream| BE
+    Intelligence <-->|Read/Write| Data

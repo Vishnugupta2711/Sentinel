@@ -1,0 +1,9 @@
+flowchart LR
+    A[Critical Risk Alert] --> B{Counterfactual Planner}
+    B --> C[Option 1: Evacuate]
+    B --> D[Option 2: Shutdown Machine]
+    B --> E[Option 3: Dispatch Supervisor]
+    C --> F(Simulate Impact)
+    D --> F
+    E --> F
+    F --> G[Optimal Recommendation]

@@ -1,0 +1,16 @@
+sequenceDiagram
+    autonumber
+    participant VE as Vision Engine
+    participant EB as Event Bus
+    participant RE as Risk Engine
+    participant CH as Chronos
+    participant MC as Mission Control
+
+    VE->>EB: Publish PPE Violation Event
+    EB->>RE: Consume Event
+    RE->>RE: Evaluate Compound Risk (Score: 85)
+    RE->>CH: Request Trajectory Prediction
+    CH-->>RE: Forecast: Severe Incident in 5m
+    RE->>EB: Publish Critical Risk Alert
+    EB->>MC: WebSocket Broadcast
+    MC->>MC: Render Red Alert UI

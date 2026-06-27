@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant Planner
+    participant User
+    participant Actuator
+
+    Planner->>User: Recommend Emergency Shutdown (95% Success Prob)
+    User->>Planner: Approve Action
+    Planner->>Actuator: Send Shutdown Command
+    Actuator-->>Planner: Confirmation
+    Planner->>User: Action Executed Successfully

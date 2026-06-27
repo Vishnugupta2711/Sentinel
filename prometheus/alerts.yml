@@ -1,0 +1,118 @@
+groups:
+  # ═══════════════════════════════════════════════════════════════
+  # APPLICATION ALERTS
+  # ═══════════════════════════════════════════════════════════════
+  - name: sentinel_application
+    rules:
+      - alert: BackendDown
+        expr: up{job="sentinel_backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: backend
+        annotations:
+          summary: "Sentinel backend is down"
+          description: "Backend has been unreachable for more than 1 minute."
+
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="sentinel_backend"}[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High API latency detected"
+          description: "95th percentile API latency exceeds 2 seconds for 5+ minutes."
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: backend
+        annotations:
+          summary: "High error rate on Sentinel API"
+          description: "More than 5% of requests are returning 5xx errors."
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes{job="sentinel_backend"} / 1024 / 1024 > 1500
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "Backend memory usage is high"
+          description: "Backend process using more than 1.5GB of memory."
+
+  # ═══════════════════════════════════════════════════════════════
+  # INFRASTRUCTURE ALERTS
+  # ═══════════════════════════════════════════════════════════════
+  - name: sentinel_infrastructure
+    rules:
+      - alert: RedisDown
+        expr: up{job="sentinel_redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+
+      - alert: PostgresDown
+        expr: up{job="sentinel_postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: postgres
+        annotations:
+          summary: "PostgreSQL is down"
+
+      - alert: NginxDown
+        expr: up{job="sentinel_nginx"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: nginx
+        annotations:
+          summary: "NGINX reverse proxy is down"
+
+  # ═══════════════════════════════════════════════════════════════
+  # AI ENGINE LATENCY ALERTS
+  # ═══════════════════════════════════════════════════════════════
+  - name: sentinel_ai_engines
+    rules:
+      - alert: PredictionLatencyHigh
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{handler=~".*chronos.*"}[5m])) > 5
+        for: 3m
+        labels:
+          severity: warning
+          service: chronos
+        annotations:
+          summary: "Chronos prediction latency is high"
+
+      - alert: RiskEvaluationSlow
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{handler=~".*risk.*"}[5m])) > 3
+        for: 3m
+        labels:
+          severity: warning
+          service: risk
+        annotations:
+          summary: "Risk evaluation latency is high"
+
+      - alert: ComplianceCheckSlow
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{handler=~".*compliance.*"}[5m])) > 3
+        for: 3m
+        labels:
+          severity: warning
+          service: compliance
+        annotations:
+          summary: "Compliance check latency is high"
+
+      - alert: PlannerExecutionSlow
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{handler=~".*planner.*"}[5m])) > 5
+        for: 3m
+        labels:
+          severity: warning
+          service: planner
+        annotations:
+          summary: "Planner execution latency is high"

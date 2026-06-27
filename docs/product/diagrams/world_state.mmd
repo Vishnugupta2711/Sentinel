@@ -1,0 +1,6 @@
+stateDiagram-v2
+    [*] --> Ingest
+    Ingest --> ObjectTracking
+    ObjectTracking --> SpatialMapping
+    SpatialMapping --> RiskEvaluation
+    RiskEvaluation --> [*]

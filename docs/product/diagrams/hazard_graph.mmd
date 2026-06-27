@@ -1,0 +1,5 @@
+graph TD
+    W[Worker: John] -- IN_ZONE --> Z[Zone: High Temp]
+    W -- LACKS --> PPE[PPE: Hard Hat]
+    Z -- HAS_HAZARD --> H[Hazard: Molten Metal]
+    H -- INCREASES_RISK --> W

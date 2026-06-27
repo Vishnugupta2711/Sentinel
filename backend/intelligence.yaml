@@ -1,0 +1,29 @@
+modules:
+  chronos:
+    enabled: true
+    priority: 10
+    timeout: 5.0
+  risk:
+    enabled: true
+    priority: 20
+    timeout: 2.0
+  planner:
+    enabled: true
+    priority: 30
+    timeout: 10.0
+  compliance:
+    enabled: true
+    priority: 40
+    timeout: 3.0
+  memory:
+    enabled: false
+    priority: 50
+    timeout: 1.0
+  vision:
+    enabled: false
+    priority: 60
+    timeout: 1.0
+  rag:
+    enabled: false
+    priority: 70
+    timeout: 5.0

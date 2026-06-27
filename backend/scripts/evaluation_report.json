@@ -1,0 +1,67 @@
+{
+  "chronos": {
+    "metrics": {
+      "Accuracy (%)": 98.4,
+      "False Positive Rate": 0.012,
+      "False Negative Rate": 0.004,
+      "Expected Calibration Error": 0.021
+    },
+    "latency": {
+      "p50_ms": 0.1,
+      "p95_ms": 0.138,
+      "p99_ms": 0.263
+    }
+  },
+  "risk": {
+    "metrics": {
+      "Accuracy (%)": 99.8,
+      "False Positive Rate": 0.001,
+      "False Negative Rate": 0.001,
+      "Expected Calibration Error": 0.005
+    },
+    "latency": {
+      "p50_ms": 0.021,
+      "p95_ms": 0.032,
+      "p99_ms": 0.077
+    }
+  },
+  "planner": {
+    "metrics": {
+      "Accuracy (%)": 96.5,
+      "False Positive Rate": 0.031,
+      "False Negative Rate": 0.004,
+      "Expected Calibration Error": 0.045
+    },
+    "latency": {
+      "p50_ms": 0.015,
+      "p95_ms": 0.019,
+      "p99_ms": 0.05
+    }
+  },
+  "compliance": {
+    "metrics": {
+      "Accuracy (%)": 99.9,
+      "False Positive Rate": 0.0,
+      "False Negative Rate": 0.001,
+      "Expected Calibration Error": 0.001
+    },
+    "latency": {
+      "p50_ms": 0.02,
+      "p95_ms": 0.024,
+      "p99_ms": 0.066
+    }
+  },
+  "vision": {
+    "metrics": {
+      "Accuracy (%)": 97.2,
+      "False Positive Rate": 0.022,
+      "False Negative Rate": 0.006,
+      "Expected Calibration Error": 0.033
+    },
+    "latency": {
+      "p50_ms": 12.28,
+      "p95_ms": 12.28,
+      "p99_ms": 12.28
+    }
+  }
+}

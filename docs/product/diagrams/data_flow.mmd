@@ -1,0 +1,10 @@
+flowchart LR
+    Plant[Plant Sensors/Cameras] --> Sim[Simulator / Ingest]
+    Sim --> EB[Event Bus]
+    EB --> WS[(World State)]
+    WS --> TL[Timeline Event Store]
+    TL --> HG[(Hazard Graph)]
+    HG --> Chronos[Chronos Engine]
+    Chronos --> Risk[Risk Engine]
+    Risk --> Plan[Planner]
+    Plan --> MC[Mission Control]

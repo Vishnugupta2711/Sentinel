@@ -1,0 +1,9 @@
+flowchart LR
+    A[Raw Video/IoT Stream] --> B(Vision Engine)
+    B -->|Detections| C{World State}
+    C --> D(Compliance Engine)
+    C --> E(Risk Engine)
+    E --> F[Hazard Graph]
+    F --> G(Chronos Predictor)
+    G --> H(Counterfactual Planner)
+    H --> I[Mitigation Strategy]

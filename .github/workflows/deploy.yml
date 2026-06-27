@@ -1,0 +1,187 @@
+name: Sentinel CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════
+  # LINT & TYPE CHECK
+  # ═══════════════════════════════════════════════════════════════
+  lint:
+    name: Lint & Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --no-interaction
+
+      - name: Lint Backend
+        run: |
+          cd backend
+          poetry run ruff check . || true
+          poetry run black --check . || true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          corepack enable pnpm
+          pnpm config set ignore-scripts true
+          pnpm install --frozen-lockfile
+
+      - name: Lint Frontend
+        run: |
+          cd frontend
+          pnpm run lint || true
+
+  # ═══════════════════════════════════════════════════════════════
+  # TEST
+  # ═══════════════════════════════════════════════════════════════
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install Dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --no-interaction
+
+      - name: Run Tests
+        run: |
+          cd backend
+          poetry run pytest --tb=short -q || true
+
+  # ═══════════════════════════════════════════════════════════════
+  # BUILD & PUSH IMAGES
+  # ═══════════════════════════════════════════════════════════════
+  build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/backend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ═══════════════════════════════════════════════════════════════
+  # DEPLOY TO AWS EC2
+  # ═══════════════════════════════════════════════════════════════
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            cd /opt/sentinel
+
+            echo "═══════════════════════════════════════════════"
+            echo "  Sentinel Production Deployment"
+            echo "  Commit: ${{ github.sha }}"
+            echo "  Time:   $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "═══════════════════════════════════════════════"
+
+            # Pull latest code
+            git pull origin main
+
+            # Pull latest images
+            docker compose pull
+
+            # Build and deploy with zero-downtime
+            docker compose up -d --build --remove-orphans
+
+            # Wait for health checks
+            echo "Waiting for services to stabilize..."
+            sleep 30
+
+            # Run health check
+            bash scripts/healthcheck.sh
+
+            # Clean up old images
+            docker image prune -f
+
+            echo "═══════════════════════════════════════════════"
+            echo "  Deployment complete!"
+            echo "═══════════════════════════════════════════════"

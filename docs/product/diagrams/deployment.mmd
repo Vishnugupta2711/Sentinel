@@ -1,0 +1,17 @@
+graph TD
+    subgraph AWS VPC
+        subgraph Public Subnet
+            ALB[Application Load Balancer]
+        end
+        subgraph Private Subnet
+            EKS[EKS Cluster]
+            MSK[Kafka MSK]
+            RDS[PostgreSQL]
+            EC[ElastiCache Redis]
+        end
+    end
+    Internet --> ALB
+    ALB --> EKS
+    EKS --> MSK
+    EKS --> RDS
+    EKS --> EC
