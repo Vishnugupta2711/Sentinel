@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"github.com/sentinel/services/go/internal/timeline"
 	"github.com/sentinel/services/go/internal/worker"
 	"github.com/sentinel/services/go/internal/world"
+	"github.com/sentinel/services/go/pkg/kafka"
 	pbtl "github.com/sentinel/services/go/pkg/proto/timeline"
 	pbw "github.com/sentinel/services/go/pkg/proto/world"
 	pbwk "github.com/sentinel/services/go/pkg/proto/worker"
@@ -54,6 +56,18 @@ func main() {
 
 	go hub.Run()
 	sim.Start()
+
+	kafkaBroker := os.Getenv("KAFKA_BROKER")
+	if kafkaBroker == "" {
+		kafkaBroker = "localhost:9092"
+	}
+	kafkaProd := kafka.NewProducer([]string{kafkaBroker}, "raw-events")
+	kafkaPub := world.NewKafkaPublisher(kafkaProd, bus)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go kafkaPub.Run(ctx)
+
+	log.Printf("core: kafka publisher started (broker: %s, topic: raw-events)", kafkaBroker)
 
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
