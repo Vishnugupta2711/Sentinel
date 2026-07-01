@@ -3,3 +3,6 @@ target/
 .classpath
 .idea/
 *.iml
+
+# Generated Java protobuf classes (regenerated via `make proto-java`)
+common/src/main/java/sentinel/
