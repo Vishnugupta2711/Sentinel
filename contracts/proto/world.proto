@@ -1,0 +1,86 @@
+syntax = "proto3";
+package sentinel.world;
+option go_package = "github.com/sentinel/services/go/pkg/proto/world";
+
+import "common.proto";
+
+message Plant {
+  string id = 1;
+  string name = 2;
+  string status = 3;
+  repeated Building buildings = 4;
+  common.Timestamp updated_at = 5;
+}
+
+message Building {
+  string id = 1;
+  string name = 2;
+  repeated Zone zones = 3;
+}
+
+message Zone {
+  string id = 1;
+  string name = 2;
+  string zone_type = 3;
+  double x = 4;
+  double y = 5;
+  double z = 6;
+  int32 width = 7;
+  int32 depth = 8;
+  int32 height = 9;
+  double risk_score = 10;
+}
+
+message Worker {
+  string id = 1;
+  string name = 2;
+  string role = 3;
+  string status = 4;
+  string zone_id = 5;
+  double x = 6;
+  double y = 7;
+  double z = 8;
+  bool has_helmet = 9;
+  bool has_vest = 10;
+  bool has_gloves = 11;
+}
+
+message Sensor {
+  string id = 1;
+  string name = 2;
+  string sensor_type = 3;
+  string zone_id = 4;
+  double value = 5;
+  string unit = 6;
+  string status = 7;
+  double threshold_high = 8;
+  double threshold_low = 9;
+}
+
+message Hazard {
+  string id = 1;
+  string hazard_type = 2;
+  string severity = 3;
+  string zone_id = 4;
+  double x = 5;
+  double y = 6;
+  double z = 7;
+  string description = 8;
+  common.Timestamp detected_at = 9;
+}
+
+message WorldSnapshot {
+  int64 version = 1;
+  common.Timestamp timestamp = 2;
+  Plant plant = 3;
+  repeated Worker workers = 4;
+  repeated Sensor sensors = 5;
+  repeated Hazard hazards = 6;
+  WeatherState weather = 7;
+}
+
+message WeatherState {
+  double temperature = 1;
+  double wind_speed = 2;
+  double humidity = 3;
+}

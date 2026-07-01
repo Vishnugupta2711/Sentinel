@@ -3,6 +3,68 @@ services:
   # APPLICATION SERVICES
   # ═══════════════════════════════════════════════════════════════
 
+  gateway:
+    build:
+      context: ./services/go
+      dockerfile: Dockerfile
+    container_name: sentinel-gateway
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    command: ["gateway"]
+    environment:
+      - GATEWAY_PORT=8080
+      - UPSTREAM_URL=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8080/health/live"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - sentinel-net
+
+  core:
+    build:
+      context: ./services/go
+      dockerfile: Dockerfile
+    container_name: sentinel-core
+    command: ["core"]
+    environment:
+      - CORE_PORT=9000
+      - REDIS_URL=redis://redis:6379
+      - CLICKHOUSE_URL=http://clickhouse:8123
+    depends_on:
+      redis:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - sentinel-net
+
   backend:
     build:
       context: ./backend
@@ -264,6 +326,41 @@ services:
       - sentinel-net
 
   # ═══════════════════════════════════════════════════════════════
+  # ANALYTICS DATABASE
+  # ═══════════════════════════════════════════════════════════════
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.12
+    container_name: sentinel-clickhouse
+    ports:
+      - "${CLICKHOUSE_PORT:-8123}:8123"
+      - "${CLICKHOUSE_NATIVE_PORT:-9000}:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8123/ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - sentinel-net
+
+  # ═══════════════════════════════════════════════════════════════
   # MESSAGE BROKER
   # ═══════════════════════════════════════════════════════════════
 
@@ -408,11 +505,98 @@ services:
     networks:
       - sentinel-net
 
+  # ═══════════════════════════════════════════════════════════════
+  # SCALA STREAMING SERVICES
+  # ═══════════════════════════════════════════════════════════════
+
+  scala-streams:
+    build:
+      context: ./services/scala
+      dockerfile: Dockerfile
+    container_name: sentinel-scala-streams
+    command: ["streams"]
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - CLICKHOUSE_URL=http://clickhouse:8123
+    depends_on:
+      kafka:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - sentinel-net
+
+  scala-cep:
+    build:
+      context: ./services/scala
+      dockerfile: Dockerfile
+    container_name: sentinel-scala-cep
+    command: ["cep"]
+    environment:
+      - KAFKA_BROKER=kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - sentinel-net
+
+  scala-sink:
+    build:
+      context: ./services/scala
+      dockerfile: Dockerfile
+    container_name: sentinel-scala-sink
+    command: ["sink"]
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - CLICKHOUSE_URL=http://clickhouse:8123
+    depends_on:
+      kafka:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - sentinel-net
+
 # ═══════════════════════════════════════════════════════════════
 # VOLUMES
 # ═══════════════════════════════════════════════════════════════
 
 volumes:
+  clickhouse_data:
+    driver: local
   postgres_data:
     driver: local
   neo4j_data:
