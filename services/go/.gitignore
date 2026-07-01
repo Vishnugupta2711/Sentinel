@@ -2,4 +2,4 @@
 *.exe
 *.test
 *.out
-services/go/core
+/core
