@@ -4,8 +4,6 @@ from api.routers import health
 
 from intelligence.routes.api import router as intelligence_router
 from intelligence.websocket.live import router as intelligence_ws_router
-from timeline.routes.api import router as timeline_router
-from timeline.websocket.live import router as timeline_ws_router
 from hazard_graph.routes.api import router as graph_router
 from hazard_graph.websocket.live import router as graph_ws_router
 from chronos.api.routes import router as chronos_router
@@ -30,8 +28,6 @@ api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(intelligence_router)
 api_router.include_router(intelligence_ws_router)
-api_router.include_router(timeline_router)
-api_router.include_router(timeline_ws_router)
 api_router.include_router(graph_router)
 api_router.include_router(graph_ws_router)
 api_router.include_router(chronos_router)
