@@ -27,6 +27,12 @@ Incremental module-by-module replacement — Go gateway front-ends Python, nativ
 | **1c** | System endpoints (`/version`, `/status`), middleware (CORS, rate-limit, request-id) | 12 |
 | **1d** | Auth middleware (stub: anonymous→viewer, bearer→admin), nginx routes to gateway | 15 |
 
+### Python cleanup (Phase 1c)
+| Deleted | Reason |
+|---------|--------|
+| `backend/system/api/routes.py` | /version + /status now served by Go gateway |
+| `backend/middleware/{rate_limit,request_id,logging}.py` | Handled by Go gateway middleware chain |
+
 ## Phase 2 — World Engine & Timeline ✅
 | Sub-phase | Deliverable | Tests |
 |---|---|---|
@@ -35,6 +41,22 @@ Incremental module-by-module replacement — Go gateway front-ends Python, nativ
 | **2c** | EventBus (topic pub/sub), Simulator (tick loop mutating sensors/workers/weather), Hub (WS client mgmt, broadcast diffs) | 5 |
 | **2d** | Timeline engine: InMemoryStore (Record/Query/Replay), gRPC TimelineService + proto generation | 8 |
 | **2e** | RedisSnapshotStore + ClickHouseTimelineStore (graceful degrade), native `/ws/world-state` handler in gateway via gRPC stream to core, docker-compose wired | 4 |
+
+### Python cleanup (Phase 2a–2d)
+| Deleted | Reason |
+|---------|--------|
+| `backend/world/{builder,manager,registry,routes,sample_data,tests}/` | World state managed by Go core gRPC |
+| `backend/world_state/{builder,diff,manager,routes,schemas,tests,websocket}/` | Snapshots served by Go core |
+| `backend/simulator/` (10 files) | Tick-loop, event bus, hub in Go core |
+| `backend/timeline/` (9 of 11 files) | Timeline store + gRPC in Go core |
+
+| Kept | Reason |
+|------|--------|
+| `backend/world/models/` (4 files) | Entity types imported by chronos, compliance, risk, planner |
+| `backend/world_state/snapshot/models.py` | WorldState model imported by all ML modules |
+| `backend/timeline/engine/core.py` (stub) | TimelineEngine singleton imported by ML modules |
+| `backend/timeline/timeline/entry.py` (stub) | TimelineEntry model imported by ML module tests |
+| `backend/intelligence/contracts/events.py` | SimulationEvent moved from deleted simulator into intelligence |
 
 ## Phase 3 — Platform Services ⏳
 | Module | Status |
