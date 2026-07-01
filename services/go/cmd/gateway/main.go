@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -32,7 +33,15 @@ func main() {
 	}
 
 	restProxy := httputil.NewSingleHostReverseProxy(upstream)
-	wsProxy := httputil.NewSingleHostReverseProxy(upstream)
+
+	wsProxy := &httputil.ReverseProxy{
+		Rewrite: func(r *httputil.ProxyRequest) {
+			r.SetURL(upstream)
+			r.Out.URL.Path = strings.Replace(r.In.URL.Path, "/ws/", "/api/v1/ws/", 1)
+			r.Out.URL.RawPath = strings.Replace(r.In.URL.RawPath, "/ws/", "/api/v1/ws/", 1)
+			r.Out.Host = r.In.Host
+		},
+	}
 
 	mux := http.NewServeMux()
 
@@ -65,7 +74,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:    ":" + port,
-		Handler: rl.Middleware(middleware.CORS(middleware.RequestID(withLogging(mux)))),
+		Handler: rl.Middleware(middleware.CORS(middleware.RequestID(middleware.Auth(withLogging(mux))))),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  120 * time.Second,

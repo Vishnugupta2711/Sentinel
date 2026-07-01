@@ -124,7 +124,7 @@ services:
       - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-ws://localhost/ws}
       - NODE_ENV=production
     depends_on:
-      backend:
+      gateway:
         condition: service_healthy
     restart: always
     deploy:
