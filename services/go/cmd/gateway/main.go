@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -28,7 +29,8 @@ func main() {
 		log.Fatalf("invalid upstream URL %q: %v", target, err)
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(upstream)
+	restProxy := httputil.NewSingleHostReverseProxy(upstream)
+	wsProxy := httputil.NewSingleHostReverseProxy(upstream)
 
 	mux := http.NewServeMux()
 
@@ -44,10 +46,11 @@ func main() {
 		w.Write([]byte(`{"status":"ok","service":"gateway"}`))
 	})
 
-	mux.HandleFunc("/api/v1/health/live", proxyHandler(proxy))
-	mux.HandleFunc("/api/v1/health/ready", proxyHandler(proxy))
+	mux.HandleFunc("/api/v1/health/live", proxyHandler(restProxy))
+	mux.HandleFunc("/api/v1/health/ready", proxyHandler(restProxy))
+	mux.HandleFunc("/api/v1/", proxyHandler(restProxy))
 
-	mux.HandleFunc("/api/v1/", proxyHandler(proxy))
+	mux.HandleFunc("/ws/", proxyHandler(wsProxy))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
@@ -93,7 +96,26 @@ func proxyHandler(proxy *httputil.ReverseProxy) http.HandlerFunc {
 func withLogging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		next.ServeHTTP(w, r)
-		log.Printf("%s %s %s %v", r.Method, r.URL.Path, r.RemoteAddr, time.Since(start))
+
+		contentType := r.Header.Get("Content-Type")
+		if strings.Contains(contentType, "text/event-stream") || r.Header.Get("Upgrade") == "websocket" {
+			next.ServeHTTP(w, r)
+			log.Printf("%s %s %s %v [stream]", r.Method, r.URL.Path, r.RemoteAddr, time.Since(start))
+			return
+		}
+
+		lrw := &loggingResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+		next.ServeHTTP(lrw, r)
+		log.Printf("%s %s %s %d %v", r.Method, r.URL.Path, r.RemoteAddr, lrw.statusCode, time.Since(start))
 	})
+}
+
+type loggingResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (lrw *loggingResponseWriter) WriteHeader(code int) {
+	lrw.statusCode = code
+	lrw.ResponseWriter.WriteHeader(code)
 }

@@ -100,6 +100,36 @@ func TestProxyRoutesToUpstream(t *testing.T) {
 	}
 }
 
+func TestWSProxyRoutesToUpstream(t *testing.T) {
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/ws/world/" {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"ws":"upstream"}`))
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer target.Close()
+
+	t.Setenv("UPSTREAM_URL", target.URL)
+
+	upstream, _ := url.Parse(target.URL)
+	proxy := httputil.NewSingleHostReverseProxy(upstream)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/ws/", func(w http.ResponseWriter, r *http.Request) {
+		proxy.ServeHTTP(w, r)
+	})
+
+	req := httptest.NewRequest("GET", "/ws/world/", nil)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 from upstream, got %d", w.Code)
+	}
+}
+
 func TestNotFound(t *testing.T) {
 	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
