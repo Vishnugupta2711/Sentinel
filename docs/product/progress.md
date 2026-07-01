@@ -59,12 +59,12 @@ Incremental module-by-module replacement — Go gateway front-ends Python, nativ
 | `backend/intelligence/contracts/events.py` | SimulationEvent moved from deleted simulator into intelligence |
 
 ## Phase 3 — Platform Services ⏳
-| Module | Status |
-|---|---|
-| Workers (CRUD + live tracking) | Pending |
-| Permits (hot work, confined space, PTW lifecycle) | Pending |
-| Access control (zones, badges, restrictions) | Pending |
-| Shift management | Pending |
+| Sub-phase | Module | Status |
+|---|---|---|
+| **3a** | Workers — CRUD, live tracking, gRPC WorkerService, REST handlers in gateway | ✅ Done |
+| **3b** | Permits (hot work, confined space, PTW lifecycle) | Pending |
+| **3c** | Access control (zones, badges, restrictions) | Pending |
+| **3d** | Shift management | Pending |
 
 ## Phase 4 — Safety & Intelligence ⏳
 | Module | Status |
@@ -109,6 +109,7 @@ Incremental module-by-module replacement — Go gateway front-ends Python, nativ
 | `internal/system` | `handler_test.go` | 2 | Version/status response format |
 | `internal/world` | `world_test.go`, `eventbus_test.go` | 16 | Models, builder, snapshot store, diff engine, gRPC service, event bus, simulator, hub |
 | `internal/timeline` | `timeline_test.go` | 8 | Store CRUD, query filtering, pagination, retention, gRPC service |
+| `internal/worker` | `worker_test.go` | 3 | Store CRUD, list, gRPC service |
 | `internal/infra` | `infra_test.go` | 4 | Redis store, ClickHouse store (both in-memory fallback) |
 
 ### Integration tests (`services/go/tests/...`)  
@@ -119,7 +120,7 @@ Incremental module-by-module replacement — Go gateway front-ends Python, nativ
 | `internal/timeline` | `timeline_test.go` | 5 | Record/query limit, replay, gRPC service, entity filter |
 | `internal/infra` | `infra_test.go` | 4 | Redis fallback, list, ClickHouse fallback, query |
 
-**Total: 56 tests** (43 unit + 13 integration), all passing, `go vet` clean.
+**Total: 59 tests** (46 unit + 13 integration), all passing, `go vet` clean.
 
 ### Test locations
 - `tests/go/` → symlink to `services/go/tests/`
@@ -165,3 +166,5 @@ Incremental module-by-module replacement — Go gateway front-ends Python, nativ
 | `httputil.ReverseProxy` for both REST and WS | Handles Upgrade header natively in Go 1.22+ |
 | `if: vars.CI_ENABLED != 'false'` on all CI jobs | Toggle all workflows via GitHub repo variable, no file edits |
 | `services/go/tests/` for integration tests | Same Go module, can access `internal/` packages |
+| Phase 3 services: new proto + Go internal package + gRPC in core + native HTTP in gateway | Follows the world/timeline pattern; REST ↔ gRPC translation done in gateway handlers |
+| Worker store wraps world.SnapshotStore (seeded from initial snapshot) | Workers live inside PlantState; worker service reads/writes via snapshot-compatible store |
