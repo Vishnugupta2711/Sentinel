@@ -75,6 +75,8 @@ services/go/vendor/
 services/go/*.exe
 services/go/*.test
 services/go/*.out
+services/go/gateway
+services/go/core
 
 # Scala
 services/scala/target/

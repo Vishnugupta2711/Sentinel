@@ -84,3 +84,34 @@ message WeatherState {
   double wind_speed = 2;
   double humidity = 3;
 }
+
+message GetSnapshotRequest {
+  int64 version = 1;
+}
+
+message GetSnapshotResponse {
+  WorldSnapshot snapshot = 1;
+}
+
+message StreamSnapshotsRequest {
+  int32 interval_ms = 1;
+}
+
+message StreamSnapshotsResponse {
+  WorldSnapshot snapshot = 1;
+}
+
+message ListSnapshotsRequest {
+  int32 limit = 1;
+}
+
+message ListSnapshotsResponse {
+  repeated WorldSnapshot snapshots = 1;
+  int32 total = 2;
+}
+
+service WorldService {
+  rpc GetSnapshot(GetSnapshotRequest) returns (GetSnapshotResponse);
+  rpc StreamSnapshots(StreamSnapshotsRequest) returns (stream StreamSnapshotsResponse);
+  rpc ListSnapshots(ListSnapshotsRequest) returns (ListSnapshotsResponse);
+}
