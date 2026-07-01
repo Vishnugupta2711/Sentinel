@@ -25,7 +25,6 @@ from vision.api.routes import router as vision_router
 from vision.websocket.live import router as vision_ws_router
 from demo.api.routes import router as demo_router
 from demo.websocket.live import router as demo_ws_router
-from system.api.routes import router as system_router
 from debrief.api.router import router as debrief_router
 from debrief.api.websocket import router as debrief_ws_router
 from investigation.api.router import router as investigation_router
@@ -57,7 +56,6 @@ api_router.include_router(vision_router)
 api_router.include_router(vision_ws_router)
 api_router.include_router(demo_router)
 api_router.include_router(demo_ws_router)
-api_router.include_router(system_router)
 api_router.include_router(debrief_router, prefix="/debrief")
 api_router.include_router(debrief_ws_router)
 api_router.include_router(investigation_router, prefix="/investigation")

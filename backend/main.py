@@ -10,9 +10,6 @@ from api.v1.router import api_router
 from core.config import settings, EnvironmentType
 from core.lifespan import lifespan
 from middleware.exceptions import setup_exception_handlers
-from middleware.logging import StructlogMiddleware
-from middleware.rate_limit import RateLimitMiddleware
-from middleware.request_id import RequestIDMiddleware
 
 
 def create_app() -> FastAPI:
@@ -56,10 +53,7 @@ def create_app() -> FastAPI:
         allowed_hosts=settings.security.allowed_hosts
     )
 
-    # Custom middlewares
-    app.add_middleware(RateLimitMiddleware)
-    app.add_middleware(StructlogMiddleware)
-    app.add_middleware(RequestIDMiddleware)
+    # Custom middlewares (rate limiting, request ID, logging handled by Go gateway)
 
     # ─── Exception Handlers ─────────────────────────────────────────
     setup_exception_handlers(app)
