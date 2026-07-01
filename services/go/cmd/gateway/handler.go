@@ -8,12 +8,14 @@ import (
 	"time"
 
 	pb "github.com/sentinel/services/go/pkg/proto/world"
+	pbwk "github.com/sentinel/services/go/pkg/proto/worker"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"nhooyr.io/websocket"
 )
 
 var coreClient pb.WorldServiceClient
+var workerClient pbwk.WorkerServiceClient
 
 func initCoreClient(coreAddr string) {
 	if coreAddr == "" {
@@ -29,6 +31,7 @@ func initCoreClient(coreAddr string) {
 	}
 
 	coreClient = pb.NewWorldServiceClient(conn)
+	workerClient = pbwk.NewWorkerServiceClient(conn)
 	log.Printf("gateway: connected to core gRPC at %s", coreAddr)
 }
 

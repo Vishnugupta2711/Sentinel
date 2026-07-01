@@ -1,0 +1,101 @@
+syntax = "proto3";
+package sentinel.worker;
+option go_package = "github.com/sentinel/services/go/pkg/proto/worker";
+
+import "common.proto";
+
+message Worker {
+  string id = 1;
+  string name = 2;
+  string role = 3;
+  string status = 4;
+  string department = 5;
+  string zone_id = 6;
+  string shift = 7;
+  double x = 8;
+  double y = 9;
+  double z = 10;
+  repeated string current_ppe = 11;
+  common.Timestamp created_at = 12;
+  common.Timestamp updated_at = 13;
+}
+
+message CreateWorkerRequest {
+  string name = 1;
+  string role = 2;
+  string department = 3;
+  string shift = 4;
+  repeated string current_ppe = 5;
+  string zone_id = 6;
+  double x = 7;
+  double y = 8;
+  double z = 9;
+}
+
+message CreateWorkerResponse {
+  Worker worker = 1;
+}
+
+message GetWorkerRequest {
+  string id = 1;
+}
+
+message GetWorkerResponse {
+  Worker worker = 1;
+}
+
+message UpdateWorkerRequest {
+  string id = 1;
+  string name = 2;
+  string role = 3;
+  string status = 4;
+  string department = 5;
+  string shift = 6;
+  string zone_id = 7;
+  double x = 8;
+  double y = 9;
+  double z = 10;
+  repeated string current_ppe = 11;
+}
+
+message UpdateWorkerResponse {
+  Worker worker = 1;
+}
+
+message DeleteWorkerRequest {
+  string id = 1;
+}
+
+message DeleteWorkerResponse {}
+
+message ListWorkersRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string role = 3;
+  string status = 4;
+  string zone_id = 5;
+}
+
+message ListWorkersResponse {
+  repeated Worker workers = 1;
+  int32 total = 2;
+  int32 page = 3;
+}
+
+message StreamWorkerUpdatesRequest {
+  int32 interval_ms = 1;
+}
+
+message WorkerUpdate {
+  Worker worker = 1;
+  string update_type = 2;
+}
+
+service WorkerService {
+  rpc CreateWorker(CreateWorkerRequest) returns (CreateWorkerResponse);
+  rpc GetWorker(GetWorkerRequest) returns (GetWorkerResponse);
+  rpc UpdateWorker(UpdateWorkerRequest) returns (UpdateWorkerResponse);
+  rpc DeleteWorker(DeleteWorkerRequest) returns (DeleteWorkerResponse);
+  rpc ListWorkers(ListWorkersRequest) returns (ListWorkersResponse);
+  rpc StreamWorkerUpdates(StreamWorkerUpdatesRequest) returns (stream WorkerUpdate);
+}
