@@ -258,6 +258,198 @@ func (x *TimelineResult) GetTotal() int32 {
 	return 0
 }
 
+type RecordRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Entry         *TimelineEntry         `protobuf:"bytes,1,opt,name=entry,proto3" json:"entry,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordRequest) Reset() {
+	*x = RecordRequest{}
+	mi := &file_timeline_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordRequest) ProtoMessage() {}
+
+func (x *RecordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_timeline_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordRequest.ProtoReflect.Descriptor instead.
+func (*RecordRequest) Descriptor() ([]byte, []int) {
+	return file_timeline_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *RecordRequest) GetEntry() *TimelineEntry {
+	if x != nil {
+		return x.Entry
+	}
+	return nil
+}
+
+type RecordResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Recorded      bool                   `protobuf:"varint,1,opt,name=recorded,proto3" json:"recorded,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordResponse) Reset() {
+	*x = RecordResponse{}
+	mi := &file_timeline_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordResponse) ProtoMessage() {}
+
+func (x *RecordResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_timeline_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordResponse.ProtoReflect.Descriptor instead.
+func (*RecordResponse) Descriptor() ([]byte, []int) {
+	return file_timeline_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *RecordResponse) GetRecorded() bool {
+	if x != nil {
+		return x.Recorded
+	}
+	return false
+}
+
+type ReplayRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FromVersion   int64                  `protobuf:"varint,1,opt,name=from_version,json=fromVersion,proto3" json:"from_version,omitempty"`
+	ToVersion     int64                  `protobuf:"varint,2,opt,name=to_version,json=toVersion,proto3" json:"to_version,omitempty"`
+	IntervalMs    int32                  `protobuf:"varint,3,opt,name=interval_ms,json=intervalMs,proto3" json:"interval_ms,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReplayRequest) Reset() {
+	*x = ReplayRequest{}
+	mi := &file_timeline_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReplayRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReplayRequest) ProtoMessage() {}
+
+func (x *ReplayRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_timeline_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReplayRequest.ProtoReflect.Descriptor instead.
+func (*ReplayRequest) Descriptor() ([]byte, []int) {
+	return file_timeline_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ReplayRequest) GetFromVersion() int64 {
+	if x != nil {
+		return x.FromVersion
+	}
+	return 0
+}
+
+func (x *ReplayRequest) GetToVersion() int64 {
+	if x != nil {
+		return x.ToVersion
+	}
+	return 0
+}
+
+func (x *ReplayRequest) GetIntervalMs() int32 {
+	if x != nil {
+		return x.IntervalMs
+	}
+	return 0
+}
+
+type ReplayResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Entry         *TimelineEntry         `protobuf:"bytes,1,opt,name=entry,proto3" json:"entry,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReplayResponse) Reset() {
+	*x = ReplayResponse{}
+	mi := &file_timeline_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReplayResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReplayResponse) ProtoMessage() {}
+
+func (x *ReplayResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_timeline_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReplayResponse.ProtoReflect.Descriptor instead.
+func (*ReplayResponse) Descriptor() ([]byte, []int) {
+	return file_timeline_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ReplayResponse) GetEntry() *TimelineEntry {
+	if x != nil {
+		return x.Entry
+	}
+	return nil
+}
+
 var File_timeline_proto protoreflect.FileDescriptor
 
 const file_timeline_proto_rawDesc = "" +
@@ -285,7 +477,23 @@ const file_timeline_proto_rawDesc = "" +
 	"\x06offset\x18\x06 \x01(\x05R\x06offset\"b\n" +
 	"\x0eTimelineResult\x12:\n" +
 	"\aentries\x18\x01 \x03(\v2 .sentinel.timeline.TimelineEntryR\aentries\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05totalB4Z2github.com/sentinel/services/go/pkg/proto/timelineb\x06proto3"
+	"\x05total\x18\x02 \x01(\x05R\x05total\"G\n" +
+	"\rRecordRequest\x126\n" +
+	"\x05entry\x18\x01 \x01(\v2 .sentinel.timeline.TimelineEntryR\x05entry\",\n" +
+	"\x0eRecordResponse\x12\x1a\n" +
+	"\brecorded\x18\x01 \x01(\bR\brecorded\"r\n" +
+	"\rReplayRequest\x12!\n" +
+	"\ffrom_version\x18\x01 \x01(\x03R\vfromVersion\x12\x1d\n" +
+	"\n" +
+	"to_version\x18\x02 \x01(\x03R\ttoVersion\x12\x1f\n" +
+	"\vinterval_ms\x18\x03 \x01(\x05R\n" +
+	"intervalMs\"H\n" +
+	"\x0eReplayResponse\x126\n" +
+	"\x05entry\x18\x01 \x01(\v2 .sentinel.timeline.TimelineEntryR\x05entry2\xff\x01\n" +
+	"\x0fTimelineService\x12M\n" +
+	"\x06Record\x12 .sentinel.timeline.RecordRequest\x1a!.sentinel.timeline.RecordResponse\x12L\n" +
+	"\x05Query\x12 .sentinel.timeline.TimelineQuery\x1a!.sentinel.timeline.TimelineResult\x12O\n" +
+	"\x06Replay\x12 .sentinel.timeline.ReplayRequest\x1a!.sentinel.timeline.ReplayResponse0\x01B4Z2github.com/sentinel/services/go/pkg/proto/timelineb\x06proto3"
 
 var (
 	file_timeline_proto_rawDescOnce sync.Once
@@ -299,23 +507,35 @@ func file_timeline_proto_rawDescGZIP() []byte {
 	return file_timeline_proto_rawDescData
 }
 
-var file_timeline_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_timeline_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_timeline_proto_goTypes = []any{
 	(*TimelineEntry)(nil),    // 0: sentinel.timeline.TimelineEntry
 	(*TimelineQuery)(nil),    // 1: sentinel.timeline.TimelineQuery
 	(*TimelineResult)(nil),   // 2: sentinel.timeline.TimelineResult
-	(*common.Timestamp)(nil), // 3: sentinel.common.Timestamp
+	(*RecordRequest)(nil),    // 3: sentinel.timeline.RecordRequest
+	(*RecordResponse)(nil),   // 4: sentinel.timeline.RecordResponse
+	(*ReplayRequest)(nil),    // 5: sentinel.timeline.ReplayRequest
+	(*ReplayResponse)(nil),   // 6: sentinel.timeline.ReplayResponse
+	(*common.Timestamp)(nil), // 7: sentinel.common.Timestamp
 }
 var file_timeline_proto_depIdxs = []int32{
-	3, // 0: sentinel.timeline.TimelineEntry.timestamp:type_name -> sentinel.common.Timestamp
-	3, // 1: sentinel.timeline.TimelineQuery.start:type_name -> sentinel.common.Timestamp
-	3, // 2: sentinel.timeline.TimelineQuery.end:type_name -> sentinel.common.Timestamp
+	7, // 0: sentinel.timeline.TimelineEntry.timestamp:type_name -> sentinel.common.Timestamp
+	7, // 1: sentinel.timeline.TimelineQuery.start:type_name -> sentinel.common.Timestamp
+	7, // 2: sentinel.timeline.TimelineQuery.end:type_name -> sentinel.common.Timestamp
 	0, // 3: sentinel.timeline.TimelineResult.entries:type_name -> sentinel.timeline.TimelineEntry
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	0, // 4: sentinel.timeline.RecordRequest.entry:type_name -> sentinel.timeline.TimelineEntry
+	0, // 5: sentinel.timeline.ReplayResponse.entry:type_name -> sentinel.timeline.TimelineEntry
+	3, // 6: sentinel.timeline.TimelineService.Record:input_type -> sentinel.timeline.RecordRequest
+	1, // 7: sentinel.timeline.TimelineService.Query:input_type -> sentinel.timeline.TimelineQuery
+	5, // 8: sentinel.timeline.TimelineService.Replay:input_type -> sentinel.timeline.ReplayRequest
+	4, // 9: sentinel.timeline.TimelineService.Record:output_type -> sentinel.timeline.RecordResponse
+	2, // 10: sentinel.timeline.TimelineService.Query:output_type -> sentinel.timeline.TimelineResult
+	6, // 11: sentinel.timeline.TimelineService.Replay:output_type -> sentinel.timeline.ReplayResponse
+	9, // [9:12] is the sub-list for method output_type
+	6, // [6:9] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_timeline_proto_init() }
@@ -329,9 +549,9 @@ func file_timeline_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_timeline_proto_rawDesc), len(file_timeline_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   7,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_timeline_proto_goTypes,
 		DependencyIndexes: file_timeline_proto_depIdxs,

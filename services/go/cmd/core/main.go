@@ -6,8 +6,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/sentinel/services/go/internal/timeline"
 	"github.com/sentinel/services/go/internal/world"
-	pb "github.com/sentinel/services/go/pkg/proto/world"
+	pbtl "github.com/sentinel/services/go/pkg/proto/timeline"
+	pbw "github.com/sentinel/services/go/pkg/proto/world"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -22,6 +24,8 @@ func main() {
 	snapStore := world.NewInMemorySnapshotStore(100)
 	diffEngine := world.NewDiffEngine()
 	worldSvc := world.NewWorldService(snapStore, diffEngine)
+	tlStore := timeline.NewInMemoryStore(1000)
+	tlSvc := timeline.NewService(tlStore)
 	hub := world.NewHub(bus)
 	sim := world.NewSimulator(snapStore, diffEngine, bus, 1*time.Second)
 
@@ -40,7 +44,8 @@ func main() {
 	}
 
 	srv := grpc.NewServer()
-	pb.RegisterWorldServiceServer(srv, worldSvc)
+	pbw.RegisterWorldServiceServer(srv, worldSvc)
+	pbtl.RegisterTimelineServiceServer(srv, tlSvc)
 	reflection.Register(srv)
 
 	log.Printf("core gRPC server listening on :%s", port)
