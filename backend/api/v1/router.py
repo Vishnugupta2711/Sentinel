@@ -2,11 +2,8 @@ from fastapi import APIRouter
 
 from api.routers import health
 
-from world.routes.api import router as world_router
 from simulator.routes.api import router as simulator_router
 from simulator.websocket.live import router as websocket_router
-from world_state.routes.api import router as world_state_router
-from world_state.websocket.live import router as world_state_ws_router
 from intelligence.routes.api import router as intelligence_router
 from intelligence.websocket.live import router as intelligence_ws_router
 from timeline.routes.api import router as timeline_router
@@ -33,11 +30,8 @@ from investigation.api.websocket import router as investigation_ws_router
 api_router = APIRouter()
 
 api_router.include_router(health.router)
-api_router.include_router(world_router)
 api_router.include_router(simulator_router)
 api_router.include_router(websocket_router)
-api_router.include_router(world_state_router)
-api_router.include_router(world_state_ws_router)
 api_router.include_router(intelligence_router)
 api_router.include_router(intelligence_ws_router)
 api_router.include_router(timeline_router)
