@@ -1,1 +1,1 @@
-// Scala project plugins (empty for now - protobuf added in later phase)
+// Protobuf Java classes generated via `make proto-java` (runs protoc directly)

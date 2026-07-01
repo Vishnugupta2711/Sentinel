@@ -1,5 +1,5 @@
 .PHONY: run build up down logs test lint format clean deploy backup healthcheck status \
-        buf-gen buf-lint build-go test-go build-scala test-scala test-all
+        buf-gen buf-lint proto-java build-go test-go build-scala test-scala test-all
 
 # ═══════════════════════════════════════════════════════════════
 # PRODUCTION DEPLOYMENT
@@ -77,11 +77,13 @@ backup: ## Run full backup (PostgreSQL + Redis + config)
 buf-lint: ## Lint protobuf contracts
 	cd contracts && buf lint
 
-buf-gen: ## Generate code from protobuf contracts
+buf-gen: ## Generate code from protobuf contracts (Go, Python, TS)
 	cd contracts && buf generate
-	cd services/go && protoc --go_out=. --go_opt=paths=source_relative \
-		--proto_path=../../contracts/proto \
-		../../contracts/proto/*.proto 2>/dev/null || true
+
+proto-java: ## Generate Java protobuf classes for Scala services
+	protoc --java_out=services/scala/common/src/main/java --proto_path=contracts/proto contracts/proto/*.proto
+
+buf-gen-all: buf-gen proto-java ## Generate all protobuf code (Go + Python + TS + Java)
 
 # ═══════════════════════════════════════════════════════════════
 # GO SERVICES
@@ -100,7 +102,7 @@ lint-go: ## Lint Go code
 # SCALA SERVICES
 # ═══════════════════════════════════════════════════════════════
 
-build-scala: ## Build Scala services
+build-scala: proto-java ## Build Scala services (regenerates Java protos first)
 	cd services/scala && sbt compile
 
 test-scala: ## Run Scala tests
@@ -174,6 +176,9 @@ clean: down ## Stop containers and clean build artifacts
 clean-all: clean ## Deep clean including Docker volumes
 	docker compose down -v --remove-orphans
 	docker image prune -f
+
+clean-gen: ## Clean all generated protobuf code
+	rm -rf contracts/gen/ services/scala/common/src/main/java/sentinel/
 
 # ═══════════════════════════════════════════════════════════════
 # HELP

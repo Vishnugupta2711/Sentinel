@@ -82,11 +82,13 @@ Incremental module-by-module replacement — Go gateway front-ends Python, nativ
 | Edge device management | Pending |
 
 ## Phase 6 — Scala Streaming ⏳
-| Module | Status |
-|---|---|
-| Kafka event streams | Pending |
-| CEP (complex event processing) | Pending |
-| ClickHouse sink | Pending |
+| Sub-phase | Module | Status |
+|---|---|---|
+| **6a** | Foundation — shared `common` lib, protobuf Java codegen, Config/Serde/ClickHouse ZIO layers, Kafka consumers wired | ✅ Done |
+| **6b** | Go Kafka publisher — world sim publishes diffs to Kafka | Pending |
+| **6c** | Kafka event streams — consume, deserialize, validate | Pending |
+| **6d** | ClickHouse sink — persist enriched events | Pending |
+| **6e** | CEP (complex event processing) — pattern rules, alerts | Pending |
 
 ## Phase 7 — Production Polish ⏳
 | Feature | Status |
@@ -168,3 +170,7 @@ Incremental module-by-module replacement — Go gateway front-ends Python, nativ
 | `services/go/tests/` for integration tests | Same Go module, can access `internal/` packages |
 | Phase 3 services: new proto + Go internal package + gRPC in core + native HTTP in gateway | Follows the world/timeline pattern; REST ↔ gRPC translation done in gateway handlers |
 | Worker store wraps world.SnapshotStore (seeded from initial snapshot) | Workers live inside PlantState; worker service reads/writes via snapshot-compatible store |
+| Scala `common` sub-project with Java protobuf codegen | protoc generates Java classes from contracts/proto/*.proto into common/src/main/java/ |
+| ZIO layers in common: AppConfig (env), ClickHouseClient (HTTP), ProtobufSerde (Kafka) | Each service depends on common; `make build-scala` regenerates Java protos first |
+| Kafka topics follow naming convention: `raw-events` → `enriched-events` → `alerts` | streams consumes raw, produces enriched; cep/enriched → alerts; sink consumes enriched |
+| Scala services are consumers only (no gRPC) | They read from Kafka topics produced by Go core (planned Phase 6b) |

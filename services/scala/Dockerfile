@@ -12,8 +12,9 @@ RUN sbt compile
 FROM eclipse-temurin:17-jre-alpine
 RUN apk --no-cache add ca-certificates tzdata && \
     addgroup -S sentinel && adduser -S -G sentinel sentinel
+COPY --from=builder /app/common/target /app/common
 COPY --from=builder /app/streams/target /app/streams
 COPY --from=builder /app/cep/target /app/cep
 COPY --from=builder /app/sink/target /app/sink
 USER sentinel
-ENTRYPOINT ["sh", "-c", "java -cp \"/app/$SERVICE/classes:/app/$SERVICE/dependency/*\" sentinel.${SERVICE}.Main"]
+ENTRYPOINT ["sh", "-c", "java -cp \"/app/common/classes:/app/common/dependency/*:/app/$SERVICE/classes:/app/$SERVICE/dependency/*\" sentinel.${SERVICE}.Main"]
