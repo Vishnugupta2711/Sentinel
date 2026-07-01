@@ -7,7 +7,6 @@ from fastapi import FastAPI
 from core.config import settings
 from core.logging import setup_logging
 from core.security_validation import validate_secrets
-from simulator.engine.core import simulation_engine
 from timeline.engine.core import timeline_engine
 
 logger = structlog.get_logger(__name__)
@@ -28,9 +27,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Initialize DB, Redis, Kafka connections here in the future
 
-    logger.info("Starting Simulation Engine")
-    simulation_engine.start()
-
     logger.info("Starting Timeline Compression Manager")
     timeline_engine.startup()
     
@@ -39,6 +35,5 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Shutdown
     logger.info("Application shutting down")
     timeline_engine.shutdown()
-    simulation_engine.stop()
     
     # Close DB, Redis, Kafka connections here in the future
