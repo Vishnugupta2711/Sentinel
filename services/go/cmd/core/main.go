@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/sentinel/services/go/internal/infra"
 	"github.com/sentinel/services/go/internal/timeline"
 	"github.com/sentinel/services/go/internal/world"
 	pbtl "github.com/sentinel/services/go/pkg/proto/timeline"
@@ -20,11 +21,16 @@ func main() {
 		port = "9000"
 	}
 
+	redisURL := os.Getenv("REDIS_URL")
+	chURL := os.Getenv("CLICKHOUSE_URL")
+
 	bus := world.NewEventBus()
-	snapStore := world.NewInMemorySnapshotStore(100)
 	diffEngine := world.NewDiffEngine()
+
+	snapStore := infra.NewRedisSnapshotStore(redisURL, 100)
+	tlStore := infra.NewClickHouseTimelineStore(chURL, 1000)
+
 	worldSvc := world.NewWorldService(snapStore, diffEngine)
-	tlStore := timeline.NewInMemoryStore(1000)
 	tlSvc := timeline.NewService(tlStore)
 	hub := world.NewHub(bus)
 	sim := world.NewSimulator(snapStore, diffEngine, bus, 1*time.Second)

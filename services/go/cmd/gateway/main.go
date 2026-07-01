@@ -27,6 +27,13 @@ func main() {
 		target = "http://backend:8000"
 	}
 
+	coreAddr := os.Getenv("CORE_ADDR")
+	if coreAddr == "" {
+		coreAddr = "core:9000"
+	}
+
+	initCoreClient(coreAddr)
+
 	upstream, err := url.Parse(target)
 	if err != nil {
 		log.Fatalf("invalid upstream URL %q: %v", target, err)
@@ -60,10 +67,14 @@ func main() {
 	mux.HandleFunc("GET /api/v1/system/version", system.VersionHandler)
 	mux.HandleFunc("GET /api/v1/system/status", system.StatusHandler)
 
+	// Native world-state WebSocket served directly by gateway (strangler fig)
+	mux.HandleFunc("/ws/world-state", worldStateHandler)
+
 	mux.HandleFunc("/api/v1/health/live", proxyHandler(restProxy))
 	mux.HandleFunc("/api/v1/health/ready", proxyHandler(restProxy))
 	mux.HandleFunc("/api/v1/", proxyHandler(restProxy))
 
+	// Generic WS proxy for all Python WS endpoints
 	mux.HandleFunc("/ws/", proxyHandler(wsProxy))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +95,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		log.Printf("gateway listening on :%s, proxying to %s", port, target)
+		log.Printf("gateway listening on :%s, proxying to %s, core at %s", port, target, coreAddr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("gateway: %v", err)
 		}
