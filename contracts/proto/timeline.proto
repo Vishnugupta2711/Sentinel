@@ -28,3 +28,27 @@ message TimelineResult {
   repeated TimelineEntry entries = 1;
   int32 total = 2;
 }
+
+message RecordRequest {
+  TimelineEntry entry = 1;
+}
+
+message RecordResponse {
+  bool recorded = 1;
+}
+
+message ReplayRequest {
+  int64 from_version = 1;
+  int64 to_version = 2;
+  int32 interval_ms = 3;
+}
+
+message ReplayResponse {
+  TimelineEntry entry = 1;
+}
+
+service TimelineService {
+  rpc Record(RecordRequest) returns (RecordResponse);
+  rpc Query(TimelineQuery) returns (TimelineResult);
+  rpc Replay(ReplayRequest) returns (stream ReplayResponse);
+}
