@@ -47,10 +47,13 @@ services:
       - CORE_PORT=9000
       - REDIS_URL=redis://redis:6379
       - CLICKHOUSE_URL=http://clickhouse:8123
+      - KAFKA_BROKER=kafka:9092
     depends_on:
       redis:
         condition: service_healthy
       clickhouse:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     restart: always
     deploy:

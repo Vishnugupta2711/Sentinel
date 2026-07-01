@@ -3,6 +3,7 @@ val zioVersion        = "2.1.17"
 val zioKafkaVersion   = "2.12.0"
 val protobufVersion   = "4.34.2"
 val clickHouseVersion = "0.7.2"
+val circeVersion      = "0.14.12"
 
 ThisBuild / version := "0.1.0"
 ThisBuild / scalaVersion := scala3Version
@@ -16,6 +17,8 @@ lazy val common = (project in file("common"))
       "dev.zio"              %% "zio-streams"           % zioVersion,
       "dev.zio"              %% "zio-kafka"             % zioKafkaVersion,
       "com.clickhouse"       %  "clickhouse-jdbc"       % clickHouseVersion,
+      "io.circe"             %% "circe-core"            % circeVersion,
+      "io.circe"             %% "circe-parser"          % circeVersion,
       "dev.zio"              %% "zio-test"              % zioVersion % Test,
       "dev.zio"              %% "zio-test-sbt"          % zioVersion % Test,
     ),
