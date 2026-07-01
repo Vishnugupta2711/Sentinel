@@ -8,9 +8,11 @@ import (
 
 	"github.com/sentinel/services/go/internal/infra"
 	"github.com/sentinel/services/go/internal/timeline"
+	"github.com/sentinel/services/go/internal/worker"
 	"github.com/sentinel/services/go/internal/world"
 	pbtl "github.com/sentinel/services/go/pkg/proto/timeline"
 	pbw "github.com/sentinel/services/go/pkg/proto/world"
+	pbwk "github.com/sentinel/services/go/pkg/proto/worker"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -35,11 +37,20 @@ func main() {
 	hub := world.NewHub(bus)
 	sim := world.NewSimulator(snapStore, diffEngine, bus, 1*time.Second)
 
+	workerStore := worker.NewInMemoryStore()
+	workerSvc := worker.NewService(workerStore)
+
 	_, err := snapStore.Store(world.SamplePlantState())
 	if err != nil {
 		log.Fatalf("core: failed to seed initial state: %v", err)
 	}
 	log.Printf("core: seeded initial world state (v1)")
+
+	if err := workerStore.LoadFromSnapshot(snapStore); err != nil {
+		log.Printf("core: warning: failed to load workers from snapshot: %v", err)
+	} else {
+		log.Printf("core: loaded workers into worker service")
+	}
 
 	go hub.Run()
 	sim.Start()
@@ -52,6 +63,7 @@ func main() {
 	srv := grpc.NewServer()
 	pbw.RegisterWorldServiceServer(srv, worldSvc)
 	pbtl.RegisterTimelineServiceServer(srv, tlSvc)
+	pbwk.RegisterWorkerServiceServer(srv, workerSvc)
 	reflection.Register(srv)
 
 	log.Printf("core gRPC server listening on :%s", port)

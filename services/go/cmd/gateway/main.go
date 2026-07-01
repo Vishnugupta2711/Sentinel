@@ -70,6 +70,13 @@ func main() {
 	// Native world-state WebSocket served directly by gateway (strangler fig)
 	mux.HandleFunc("/ws/world-state", worldStateHandler)
 
+	// Worker CRUD — native Go handlers (Phase 3a)
+	mux.HandleFunc("GET /api/v1/workers", listWorkersHandler)
+	mux.HandleFunc("GET /api/v1/workers/", getWorkerHandler)
+	mux.HandleFunc("POST /api/v1/workers", createWorkerHandler)
+	mux.HandleFunc("PUT /api/v1/workers/", updateWorkerHandler)
+	mux.HandleFunc("DELETE /api/v1/workers/", deleteWorkerHandler)
+
 	mux.HandleFunc("/api/v1/health/live", proxyHandler(restProxy))
 	mux.HandleFunc("/api/v1/health/ready", proxyHandler(restProxy))
 	mux.HandleFunc("/api/v1/", proxyHandler(restProxy))
