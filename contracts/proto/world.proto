@@ -1,6 +1,8 @@
 syntax = "proto3";
 package sentinel.world;
 option go_package = "github.com/sentinel/services/go/pkg/proto/world";
+option java_multiple_files = true;
+option java_package = "sentinel.world";
 
 import "common.proto";
 
