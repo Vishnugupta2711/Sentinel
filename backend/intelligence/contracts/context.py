@@ -2,7 +2,7 @@ from typing import Dict, Any, List
 from pydantic import BaseModel, Field
 from utils.datetime import format_iso, utc_now
 from utils.uuid import generate_uuid
-from simulator.events.models import SimulationEvent
+from intelligence.contracts.events import SimulationEvent
 
 class IntelligenceContext(BaseModel):
     """

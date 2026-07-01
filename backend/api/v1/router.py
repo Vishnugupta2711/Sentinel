@@ -2,15 +2,8 @@ from fastapi import APIRouter
 
 from api.routers import health
 
-from world.routes.api import router as world_router
-from simulator.routes.api import router as simulator_router
-from simulator.websocket.live import router as websocket_router
-from world_state.routes.api import router as world_state_router
-from world_state.websocket.live import router as world_state_ws_router
 from intelligence.routes.api import router as intelligence_router
 from intelligence.websocket.live import router as intelligence_ws_router
-from timeline.routes.api import router as timeline_router
-from timeline.websocket.live import router as timeline_ws_router
 from hazard_graph.routes.api import router as graph_router
 from hazard_graph.websocket.live import router as graph_ws_router
 from chronos.api.routes import router as chronos_router
@@ -25,7 +18,6 @@ from vision.api.routes import router as vision_router
 from vision.websocket.live import router as vision_ws_router
 from demo.api.routes import router as demo_router
 from demo.websocket.live import router as demo_ws_router
-from system.api.routes import router as system_router
 from debrief.api.router import router as debrief_router
 from debrief.api.websocket import router as debrief_ws_router
 from investigation.api.router import router as investigation_router
@@ -34,15 +26,8 @@ from investigation.api.websocket import router as investigation_ws_router
 api_router = APIRouter()
 
 api_router.include_router(health.router)
-api_router.include_router(world_router)
-api_router.include_router(simulator_router)
-api_router.include_router(websocket_router)
-api_router.include_router(world_state_router)
-api_router.include_router(world_state_ws_router)
 api_router.include_router(intelligence_router)
 api_router.include_router(intelligence_ws_router)
-api_router.include_router(timeline_router)
-api_router.include_router(timeline_ws_router)
 api_router.include_router(graph_router)
 api_router.include_router(graph_ws_router)
 api_router.include_router(chronos_router)
@@ -57,7 +42,6 @@ api_router.include_router(vision_router)
 api_router.include_router(vision_ws_router)
 api_router.include_router(demo_router)
 api_router.include_router(demo_ws_router)
-api_router.include_router(system_router)
 api_router.include_router(debrief_router, prefix="/debrief")
 api_router.include_router(debrief_ws_router)
 api_router.include_router(investigation_router, prefix="/investigation")

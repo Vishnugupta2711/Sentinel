@@ -1,30 +1,26 @@
-from timeline.storage.store import TimelineStore
-from timeline.compression.manager import CompressionManager
-from timeline.queries.engine import QueryEngine
-from timeline.analytics.engine import TimelineAnalytics
-from timeline.replay.manager import ReplayManager
+from typing import List, Optional
+from datetime import datetime, timedelta
+from timeline.timeline.entry import TimelineEntry
+
+
+class InMemoryStore:
+    def __init__(self):
+        self._entries: List[TimelineEntry] = []
+
+    def latest(self) -> Optional[TimelineEntry]:
+        return self._entries[-1] if self._entries else None
+
+    def get_last_n(self, window_minutes: int) -> List[TimelineEntry]:
+        cutoff = datetime.utcnow() - timedelta(minutes=window_minutes)
+        return [e for e in self._entries if e.timestamp >= cutoff.isoformat()]
+
+    def insert(self, entry: TimelineEntry) -> None:
+        self._entries.append(entry)
+
 
 class TimelineEngine:
-    """Composition root for the Sentinel Historical Timeline Engine."""
-    
     def __init__(self):
-        self.store = TimelineStore(max_capacity=1000)
-        
-        # Modules
-        self.compression = CompressionManager(self.store, keep_uncompressed=100)
-        self.queries = QueryEngine(self.store)
-        self.analytics = TimelineAnalytics(self.queries)
-        self.replay = ReplayManager(self.store)
+        self.store = InMemoryStore()
 
-    def startup(self):
-        self.compression.start()
 
-    def shutdown(self):
-        self.compression.stop()
-        self.replay.pause()
-
-# Singleton for FastAPI routes
 timeline_engine = TimelineEngine()
-
-def get_timeline_engine() -> TimelineEngine:
-    return timeline_engine
