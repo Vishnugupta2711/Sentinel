@@ -1,4 +1,5 @@
-.PHONY: run build up down logs test lint format clean deploy backup healthcheck status
+.PHONY: run build up down logs test lint format clean deploy backup healthcheck status \
+        buf-gen buf-lint build-go test-go build-scala test-scala test-all
 
 # ═══════════════════════════════════════════════════════════════
 # PRODUCTION DEPLOYMENT
@@ -70,6 +71,48 @@ backup: ## Run full backup (PostgreSQL + Redis + config)
 	@bash scripts/backup.sh
 
 # ═══════════════════════════════════════════════════════════════
+# PROTOBUF CONTRACTS
+# ═══════════════════════════════════════════════════════════════
+
+buf-lint: ## Lint protobuf contracts
+	cd contracts && buf lint
+
+buf-gen: ## Generate code from protobuf contracts
+	cd contracts && buf generate
+	cd services/go && protoc --go_out=. --go_opt=paths=source_relative \
+		--proto_path=../../contracts/proto \
+		../../contracts/proto/*.proto 2>/dev/null || true
+
+# ═══════════════════════════════════════════════════════════════
+# GO SERVICES
+# ═══════════════════════════════════════════════════════════════
+
+build-go: ## Build Go services
+	cd services/go && go build ./cmd/gateway && go build ./cmd/core
+
+test-go: ## Run Go tests
+	cd services/go && go test ./...
+
+lint-go: ## Lint Go code
+	cd services/go && go vet ./...
+
+# ═══════════════════════════════════════════════════════════════
+# SCALA SERVICES
+# ═══════════════════════════════════════════════════════════════
+
+build-scala: ## Build Scala services
+	cd services/scala && sbt compile
+
+test-scala: ## Run Scala tests
+	cd services/scala && sbt test
+
+# ═══════════════════════════════════════════════════════════════
+# ALL TESTS
+# ═══════════════════════════════════════════════════════════════
+
+test-all: test-backend test-go test-scala ## Run all tests
+
+# ═══════════════════════════════════════════════════════════════
 # BACKEND DEVELOPMENT
 # ═══════════════════════════════════════════════════════════════
 
@@ -111,9 +154,9 @@ format-frontend: ## Format frontend code
 
 run: up run-backend run-frontend
 
-test: test-backend
+test: test-backend test-go test-scala
 
-lint: lint-backend lint-frontend
+lint: buf-lint lint-backend lint-frontend lint-go
 
 format: format-backend format-frontend
 

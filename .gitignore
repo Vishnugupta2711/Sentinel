@@ -70,6 +70,19 @@ ENV/
 docker-compose.override.yml
 *.log
 
+# Go
+services/go/vendor/
+services/go/*.exe
+services/go/*.test
+services/go/*.out
+
+# Scala
+services/scala/target/
+services/scala/.bsp/
+
+# Contracts
+contracts/gen/
+
 # Git
 .git/
 .gitignore_global

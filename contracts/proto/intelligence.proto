@@ -1,0 +1,82 @@
+syntax = "proto3";
+package sentinel.intelligence;
+option go_package = "github.com/sentinel/services/go/pkg/proto/intelligence";
+
+import "common.proto";
+
+message PredictRequest {
+  string plant_id = 1;
+  int32 horizon_minutes = 2;
+  repeated string sensor_ids = 3;
+}
+
+message PredictResponse {
+  repeated Prediction predictions = 1;
+  common.Timestamp generated_at = 2;
+}
+
+message Prediction {
+  string entity_id = 1;
+  string entity_type = 2;
+  repeated double values = 3;
+  repeated common.Timestamp timestamps = 4;
+  double confidence = 5;
+  string scenario = 6;
+}
+
+message EvaluateRiskRequest {
+  string plant_id = 1;
+  string zone_id = 2;
+}
+
+message EvaluateRiskResponse {
+  repeated RiskAssessment assessments = 1;
+}
+
+message RiskAssessment {
+  string risk_type = 1;
+  double score = 2;
+  string level = 3;
+  string zone_id = 4;
+  repeated string contributing_factors = 5;
+  string description = 6;
+}
+
+message CheckComplianceRequest {
+  string plant_id = 1;
+  string zone_id = 2;
+  string worker_id = 3;
+}
+
+message CheckComplianceResponse {
+  repeated ComplianceViolation violations = 1;
+}
+
+message ComplianceViolation {
+  string rule_id = 1;
+  string rule_name = 2;
+  string description = 3;
+  string severity = 4;
+  string entity_id = 5;
+  string entity_type = 6;
+  string regulation = 7;
+}
+
+message InferVisionRequest {
+  bytes image_data = 1;
+  string camera_id = 2;
+}
+
+message InferVisionResponse {
+  repeated Detection detections = 1;
+}
+
+message Detection {
+  string object_class = 1;
+  double confidence = 2;
+  double x = 3;
+  double y = 4;
+  double width = 5;
+  double height = 6;
+  string track_id = 7;
+}

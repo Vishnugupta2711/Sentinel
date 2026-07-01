@@ -1,0 +1,34 @@
+syntax = "proto3";
+package sentinel.events;
+option go_package = "github.com/sentinel/services/go/pkg/proto/events";
+
+import "common.proto";
+
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  WORKER_MOVED = 1;
+  SENSOR_UPDATED = 2;
+  HAZARD_DETECTED = 3;
+  HAZARD_CLEARED = 4;
+  RISK_EVALUATED = 5;
+  VIOLATION_DETECTED = 6;
+  PREDICTION_GENERATED = 7;
+  PLAN_RECOMMENDED = 8;
+  SIMULATION_TICK = 9;
+  ALERT_TRIGGERED = 10;
+}
+
+message Event {
+  string id = 1;
+  EventType type = 2;
+  common.Timestamp timestamp = 3;
+  string source = 4;
+  string plant_id = 5;
+  bytes payload = 6;
+  common.Metadata metadata = 7;
+}
+
+message EventBatch {
+  repeated Event events = 1;
+  int32 count = 2;
+}

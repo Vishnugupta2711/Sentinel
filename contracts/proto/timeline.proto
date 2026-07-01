@@ -1,0 +1,30 @@
+syntax = "proto3";
+package sentinel.timeline;
+option go_package = "github.com/sentinel/services/go/pkg/proto/timeline";
+
+import "common.proto";
+
+message TimelineEntry {
+  int64 version = 1;
+  common.Timestamp timestamp = 2;
+  string entity_id = 3;
+  string entity_type = 4;
+  string event_type = 5;
+  bytes snapshot = 6;
+  int32 compressed_size = 7;
+  int32 original_size = 8;
+}
+
+message TimelineQuery {
+  common.Timestamp start = 1;
+  common.Timestamp end = 2;
+  repeated string entity_ids = 3;
+  repeated string event_types = 4;
+  int32 limit = 5;
+  int32 offset = 6;
+}
+
+message TimelineResult {
+  repeated TimelineEntry entries = 1;
+  int32 total = 2;
+}
