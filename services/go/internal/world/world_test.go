@@ -260,8 +260,8 @@ func TestWorldServiceGetSnapshotByVersion(t *testing.T) {
 }
 
 func TestGenerateID(t *testing.T) {
-	id1 := generateID()
-	id2 := generateID()
+	id1 := GenerateID()
+	id2 := GenerateID()
 
 	if id1 == id2 {
 		t.Error("expected unique IDs")
