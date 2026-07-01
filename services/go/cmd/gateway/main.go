@@ -8,9 +8,11 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
+
+	"github.com/sentinel/services/go/internal/middleware"
+	"github.com/sentinel/services/go/internal/system"
 )
 
 func main() {
@@ -46,6 +48,9 @@ func main() {
 		w.Write([]byte(`{"status":"ok","service":"gateway"}`))
 	})
 
+	mux.HandleFunc("GET /api/v1/system/version", system.VersionHandler)
+	mux.HandleFunc("GET /api/v1/system/status", system.StatusHandler)
+
 	mux.HandleFunc("/api/v1/health/live", proxyHandler(restProxy))
 	mux.HandleFunc("/api/v1/health/ready", proxyHandler(restProxy))
 	mux.HandleFunc("/api/v1/", proxyHandler(restProxy))
@@ -56,9 +61,11 @@ func main() {
 		http.NotFound(w, r)
 	})
 
+	rl := middleware.NewRateLimiter(100, 10*time.Second)
+
 	srv := &http.Server{
-		Addr:         ":" + port,
-		Handler:      withLogging(mux),
+		Addr:    ":" + port,
+		Handler: rl.Middleware(middleware.CORS(middleware.RequestID(withLogging(mux)))),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  120 * time.Second,
@@ -96,14 +103,6 @@ func proxyHandler(proxy *httputil.ReverseProxy) http.HandlerFunc {
 func withLogging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-
-		contentType := r.Header.Get("Content-Type")
-		if strings.Contains(contentType, "text/event-stream") || r.Header.Get("Upgrade") == "websocket" {
-			next.ServeHTTP(w, r)
-			log.Printf("%s %s %s %v [stream]", r.Method, r.URL.Path, r.RemoteAddr, time.Since(start))
-			return
-		}
-
 		lrw := &loggingResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 		next.ServeHTTP(lrw, r)
 		log.Printf("%s %s %s %d %v", r.Method, r.URL.Path, r.RemoteAddr, lrw.statusCode, time.Since(start))
