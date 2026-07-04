@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/sentinel/services/go/internal/world"
 )
 
@@ -18,7 +19,8 @@ type RedisSnapshotStore struct {
 	ordered []int64
 	maxSnap int
 	redisURL string
-	enabled bool
+	enabled  bool
+	rdb      *redis.Client
 }
 
 func NewRedisSnapshotStore(redisURL string, maxSnapshots int) *RedisSnapshotStore {
@@ -34,6 +36,10 @@ func NewRedisSnapshotStore(redisURL string, maxSnapshots int) *RedisSnapshotStor
 		if err == nil && u.Scheme == "redis" {
 			s.enabled = true
 			log.Printf("redis: connected to %s", redisURL)
+			opts, err := redis.ParseURL(redisURL)
+			if err == nil {
+				s.rdb = redis.NewClient(opts)
+			}
 		}
 	}
 
@@ -73,15 +79,20 @@ func (s *RedisSnapshotStore) Store(state world.PlantState) (int64, error) {
 		delete(s.local, old)
 	}
 
-	if s.enabled {
+	if s.enabled && s.rdb != nil {
 		go func() {
 			data, err := json.Marshal(state)
 			if err != nil {
 				log.Printf("redis: marshal error: %v", err)
 				return
 			}
-			// TODO: actual Redis SET with expiration
-			_ = data
+			
+			ctx := context.Background()
+			err = s.rdb.Set(ctx, s.versionKey(v), data, 1*time.Hour).Err()
+			if err != nil {
+				log.Printf("redis: SET error: %v", err)
+			}
+			s.rdb.Set(ctx, s.latestKey(), data, 1*time.Hour)
 		}()
 	}
 
@@ -134,8 +145,8 @@ func (s *RedisSnapshotStore) Len() int {
 }
 
 func (s *RedisSnapshotStore) Close() error {
-	if s.enabled {
-		// TODO: close Redis connection
+	if s.enabled && s.rdb != nil {
+		return s.rdb.Close()
 	}
 	return nil
 }

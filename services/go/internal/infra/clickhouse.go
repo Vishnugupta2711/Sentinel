@@ -6,6 +6,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"bytes"
+	"net/http"
+	"encoding/json"
+	"fmt"
+	"encoding/base64"
 
 	"github.com/sentinel/services/go/pkg/proto/common"
 	pb "github.com/sentinel/services/go/pkg/proto/timeline"
@@ -44,8 +49,47 @@ func NewClickHouseTimelineStore(chURL string, maxEntries int) *ClickHouseTimelin
 	return s
 }
 
+func (s *ClickHouseTimelineStore) executeQuery(query string) error {
+	resp, err := http.Post(s.chURL, "text/plain", strings.NewReader(query))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("status code %d", resp.StatusCode)
+	}
+	return nil
+}
+
 func (s *ClickHouseTimelineStore) initSchema() {
-	log.Printf("clickhouse: schema initialized (stub)")
+	if !s.enabled {
+		return
+	}
+	
+	err := s.executeQuery("CREATE DATABASE IF NOT EXISTS sentinel;")
+	if err != nil {
+		log.Printf("clickhouse: db creation failed: %v", err)
+	}
+	
+	query := `
+		CREATE TABLE IF NOT EXISTS sentinel.timeline (
+			version Int64,
+			timestamp DateTime,
+			entity_id String,
+			entity_type String,
+			event_type String,
+			snapshot String,
+			compressed_size Int32,
+			original_size Int32
+		) ENGINE = MergeTree()
+		ORDER BY (version, timestamp);
+	`
+	err = s.executeQuery(query)
+	if err != nil {
+		log.Printf("clickhouse: table creation failed: %v", err)
+	} else {
+		log.Printf("clickhouse: schema initialized successfully")
+	}
 }
 
 func (s *ClickHouseTimelineStore) Record(entry *pb.TimelineEntry) error {
@@ -70,8 +114,45 @@ func (s *ClickHouseTimelineStore) Record(entry *pb.TimelineEntry) error {
 	return nil
 }
 
+type chTimelineEntry struct {
+	Version        int64  `json:"version"`
+	Timestamp      int64  `json:"timestamp"`
+	EntityID       string `json:"entity_id"`
+	EntityType     string `json:"entity_type"`
+	EventType      string `json:"event_type"`
+	Snapshot       string `json:"snapshot"`
+	CompressedSize int32  `json:"compressed_size"`
+	OriginalSize   int32  `json:"original_size"`
+}
+
 func (s *ClickHouseTimelineStore) insertAsync(entry *pb.TimelineEntry) {
-	_ = entry
+	chEntry := chTimelineEntry{
+		Version:        entry.Version,
+		Timestamp:      entry.Timestamp.GetSeconds(),
+		EntityID:       entry.EntityId,
+		EntityType:     entry.EntityType,
+		EventType:      entry.EventType,
+		Snapshot:       base64.StdEncoding.EncodeToString(entry.Snapshot),
+		CompressedSize: entry.CompressedSize,
+		OriginalSize:   entry.OriginalSize,
+	}
+
+	data, err := json.Marshal(chEntry)
+	if err != nil {
+		log.Printf("clickhouse: marshal error: %v", err)
+		return
+	}
+
+	reqURL := fmt.Sprintf("%s/?query=INSERT+INTO+sentinel.timeline+FORMAT+JSONEachRow", s.chURL)
+	resp, err := http.Post(reqURL, "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		log.Printf("clickhouse: insert failed: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		log.Printf("clickhouse: insert error response: %d", resp.StatusCode)
+	}
 }
 
 func (s *ClickHouseTimelineStore) Query(query *pb.TimelineQuery) ([]*pb.TimelineEntry, int32, error) {
