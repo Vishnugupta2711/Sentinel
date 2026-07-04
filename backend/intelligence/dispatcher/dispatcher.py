@@ -12,10 +12,14 @@ from intelligence.events.publisher import EventPublisher
 logger = structlog.get_logger(__name__)
 
 # Modules that MUST run sequentially because downstream modules depend on their output
-# (Chronos → Risk → Planner all share context.metadata)
-SEQUENTIAL_MODULES = {"chronos", "risk", "planner", "compliance"}
+# Phase 4: Chronos → Risk → Planner → Compliance
+# Phase 7: GasSensor → WorkPermit → Shift → Correlation → RAG → Alerts
+SEQUENTIAL_MODULES = {
+    "chronos", "risk", "planner", "compliance",
+    "gas_sensor", "work_permit", "shift", "correlation", "rag", "alerts",
+}
 # Independent modules that have no data dependencies and can run in parallel
-PARALLEL_MODULES   = {"memory", "vision", "rag"}
+PARALLEL_MODULES   = {"memory", "vision"}
 
 
 class IntelligenceDispatcher:

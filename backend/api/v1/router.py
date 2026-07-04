@@ -23,6 +23,14 @@ from debrief.api.websocket import router as debrief_ws_router
 from investigation.api.router import router as investigation_router
 from investigation.api.websocket import router as investigation_ws_router
 
+# Phase 7: Multi-agent compound risk routes
+from correlation.api.routes import router as correlation_router
+from correlation.websocket.live import router as correlation_ws_router
+from rag.api.routes import router as rag_router
+from rag.websocket.live import router as rag_ws_router
+from alerts.api.routes import router as alerts_router
+from alerts.websocket.live import router as alerts_ws_router
+
 api_router = APIRouter()
 
 api_router.include_router(health.router)
@@ -46,3 +54,11 @@ api_router.include_router(debrief_router, prefix="/debrief")
 api_router.include_router(debrief_ws_router)
 api_router.include_router(investigation_router, prefix="/investigation")
 api_router.include_router(investigation_ws_router)
+
+# Phase 7: Multi-agent compound risk routes
+api_router.include_router(correlation_router)
+api_router.include_router(correlation_ws_router)
+api_router.include_router(rag_router)
+api_router.include_router(rag_ws_router)
+api_router.include_router(alerts_router)
+api_router.include_router(alerts_ws_router)

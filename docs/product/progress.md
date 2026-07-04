@@ -65,13 +65,15 @@ Incremental module-by-module replacement — Go gateway front-ends Python, nativ
 | **3c** | Access control (zones, badges, restrictions) | ✅ Done |
 | **3d** | Shift management | ✅ Done |
 
-## Phase 4 — Safety & Intelligence
-| Module | Status |
-|---|---|
-| Risk engine (hazard graph, scoring, zone risk) | Pending |
-| Chronos (predictive analytics via Python ML) | Pending |
-| Compliance (violations, audit trail) | Pending |
-| Planner (evacuation, rescue path planning) | Pending |
+## Phase 4 — Safety & Intelligence ✅
+All modules implemented in Python per the architecture (Python owns ML/AI). Updated to reflect actual codebase status.
+
+| Module | Status | Files |
+|---|---|---|
+| Risk engine (hazard graph, scoring, zone risk) | ✅ Done | 8 files: `backend/risk/` (compound risk engine, explosion/fatality rules, scoring, WS feed) |
+| Chronos (predictive analytics via Python ML) | ✅ Done | 11 files: `backend/chronos/` (feature extraction, scenario generation, confidence, reasoning) |
+| Compliance (violations, audit trail) | ✅ Done | 8 files: `backend/compliance/` (OISD/PPE rules, regulation KB, violation tracking) |
+| Planner (evacuation, rescue path planning) | ✅ Done | 9 files: `backend/planner/` (counterfactual simulation, action implementations, optimizer) |
 
 ## Phase 5 — Vision & Edge
 | Module | Status |
@@ -92,15 +94,17 @@ Incremental module-by-module replacement — Go gateway front-ends Python, nativ
 ## Phase 7 — AI-Powered Industrial Safety Intelligence 🥇
 Multi-agent compound risk detection — the core differentiator for hackathon evaluation.
 
-| Agent / Module | Status |
-|---|---|
-| **Gas Sensor Agent** — real-time gas leak detection, concentration tracking, threshold alerting | Pending |
-| **Work Permit Agent** — hot work, confined space PTW lifecycle, zone overlap validation | Pending |
-| **Shift Agent** — shift changeover tracking, personnel location, handover gaps | Pending |
-| **Correlation Layer** — compound risk scoring across agent outputs, temporal windowing | Pending |
-| **RAG Agent** — OISD / Factory Act document ingestion, incident pattern retrieval | Pending |
-| **Alert Engine** — priority-queued alerts, multi-channel dispatch | Pending |
-| **Demo Simulator** — synthetic IoT time-series + mock permit logs + incident corpus | Pending |
+| Agent / Module | Status | Files |
+|---|---|---|
+| **Gas Sensor Agent** — real-time gas leak detection, concentration tracking, threshold alerting | ✅ Done | `backend/agents/gas_sensor.py` (6 gas types, configurable thresholds, severity classification) |
+| **Work Permit Agent** — hot work, confined space PTW lifecycle, zone overlap validation | ✅ Done | `backend/agents/work_permit.py` (hot work + confined space detection, hazard zone overlap, CRITICAL alerts) |
+| **Shift Agent** — shift changeover tracking, personnel location, handover gaps | ✅ Done | `backend/agents/shift.py` (3-shift detection, understaffing, night zone coverage, handover gap analysis) |
+| **Correlation Layer** — compound risk scoring across agent outputs, temporal windowing | ✅ Done | `backend/correlation/` (zone overlap, temporal escalation, severity escalation; cross-agent bonus scoring) |
+| **RAG Agent** — OISD / Factory Act document ingestion, incident pattern retrieval | ✅ Done | `backend/rag/` (10 regulation docs, 4 incident records, keyword relevance, auto-synthesis) |
+| **Alert Engine** — priority-queued alerts, multi-channel dispatch | ✅ Done | `backend/alerts/` (5-tier priority, acknowledge/resolve lifecycle, subscribe/broadcast) |
+| **Demo Simulator** — synthetic IoT time-series + mock permit logs + incident corpus | ✅ Done | `backend/demo/scenarios/generator.py` (3 scenarios, per-stage WorldState builder, agent-driven analysis) |
+
+All Phase 7 modules are wired into the IntelligenceEngine pipeline (`intelligence/modules/phase7.py`) and exposed via REST + WebSocket feeds. 23 new tests pass.
 
 ### Why This Wins
 - **Perfect for agentic AI** — multi-agent architecture maps naturally to compound risk detection
@@ -141,7 +145,16 @@ Multi-agent compound risk detection — the core differentiator for hackathon ev
 | `internal/timeline` | `timeline_test.go` | 5 | Record/query limit, replay, gRPC service, entity filter |
 | `internal/infra` | `infra_test.go` | 4 | Redis fallback, list, ClickHouse fallback, query |
 
-**Total: 59 Go tests (46 unit + 13 integration)** — all passing, `go vet` clean. Scala: 4 sub-projects compile clean, test clean.
+### Phase 7 tests (`backend/agents/tests/`, `backend/correlation/tests/`, `backend/rag/tests/`, `backend/alerts/tests/`)
+| Package | Files | Count | What's tested |
+|---|---|---|---|
+| `agents/tests` | `test_agents.py` | 6 | Gas sensor classification, no-signal edge case, hot work permit signal, shift agent no-workers |
+| `correlation/tests` | `test_correlation.py` | 4 | Empty signals, single signal no correlation, multi-agent zone overlap, score-to-level mapping |
+| `rag/tests` | `test_rag.py` | 5 | Keyword retrieval, incident matching, empty query, KB reload, signal-context retrieval |
+| `alerts/tests` | `test_alerts.py` | 6 | Signal evaluation, correlation alerts, acknowledge/resolve lifecycle, priority sorting, queue summary |
+| `demo/tests` | `test_demo.py` | 2 | Scenario listing, full demo lifecycle (existing, enhanced) |
+
+**Total: 82 Go tests (46 unit + 13 integration + 23 Python)** — all passing, `go vet` clean. Scala: 4 sub-projects compile clean, test clean.
 
 ---
 
