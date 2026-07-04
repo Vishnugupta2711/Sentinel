@@ -7,6 +7,9 @@ export type ComplianceViolation = { violation_id: string; severity: string; desc
 export type PlannerRecommendation = { plan_id: string; scenario_name: string; score: number };
 export type RiskAssessment = { risk_id: string; risk_type: string; severity: string; risk_score: number };
 export type ChronosPrediction = { prediction_id: string; horizon_minutes: number };
+export type CorrelationAssessment = { risk_id: string; level: string; score: number; primary_zone: string; description: string; recommendations: string[]; timestamp: string };
+export type Alert = { alert_id: string; title: string; description: string; priority: string; status: string; source_agent: string; score: number; zone_id: string; timestamp: string };
+export type RAGResult = { query: string; documents: { title: string; section: string; content: string; relevance_score: number }[]; incidents: { incident: { title: string; severity: string; root_cause: string }; relevance_score: number }[] };
 
 interface IntelligenceState {
   visionEvents: VisionEvent[];
@@ -14,6 +17,9 @@ interface IntelligenceState {
   plannerRecommendations: PlannerRecommendation[];
   riskAssessments: RiskAssessment[];
   chronosPredictions: ChronosPrediction[];
+  correlationAssessments: CorrelationAssessment[];
+  alerts: Alert[];
+  ragResults: RAGResult[];
   connectionStatus: WSStatus;
 }
 
@@ -27,6 +33,9 @@ let wsCompliance: WebSocketManager | null = null;
 let wsPlanner: WebSocketManager | null = null;
 let wsRisk: WebSocketManager | null = null;
 let wsChronos: WebSocketManager | null = null;
+let wsCorrelation: WebSocketManager | null = null;
+let wsAlerts: WebSocketManager | null = null;
+let wsRAG: WebSocketManager | null = null;
 
 export const useIntelligenceStore = create<IntelligenceStore>((set) => ({
   visionEvents: [],
@@ -34,6 +43,9 @@ export const useIntelligenceStore = create<IntelligenceStore>((set) => ({
   plannerRecommendations: [],
   riskAssessments: [],
   chronosPredictions: [],
+  correlationAssessments: [],
+  alerts: [],
+  ragResults: [],
   connectionStatus: 'disconnected',
 
   connect: () => {
@@ -55,7 +67,6 @@ export const useIntelligenceStore = create<IntelligenceStore>((set) => ({
     }
     if (!wsPlanner) {
       wsPlanner = new WebSocketManager(`${WS_BASE}/ws/planner/`, (data) => {
-        // Backend sends "NEW_RECOMMENDATION" event, not "PLAN_GENERATED"
         if (data.event === "NEW_RECOMMENDATION" && data.plan) {
            set((state) => ({ plannerRecommendations: [data.plan, ...state.plannerRecommendations].slice(0, 10) }));
         }
@@ -76,6 +87,39 @@ export const useIntelligenceStore = create<IntelligenceStore>((set) => ({
         });
         wsChronos.connect();
     }
+    if (!wsCorrelation) {
+      wsCorrelation = new WebSocketManager(`${WS_BASE}/ws/correlation/`, (data) => {
+        if (data.event === "CORRELATION_UPDATED" && data.result) {
+          const assessments = (data.result.assessments || []).map((a: { risk_id?: string; correlation_id?: string; [key: string]: unknown }) => ({
+            risk_id: a.risk_id || a.correlation_id || '',
+            level: a.level || 'NONE',
+            score: a.score || 0,
+            primary_zone: a.primary_zone || '',
+            description: a.description || '',
+            recommendations: a.recommendations || [],
+            timestamp: a.timestamp || new Date().toISOString(),
+          }));
+          set((state) => ({ correlationAssessments: [...assessments, ...state.correlationAssessments].slice(0, 20) }));
+        }
+      });
+      wsCorrelation.connect();
+    }
+    if (!wsAlerts) {
+      wsAlerts = new WebSocketManager(`${WS_BASE}/ws/alerts/`, (data) => {
+        if (data.event === "NEW_ALERT" && data.alert) {
+          set((state) => ({ alerts: [data.alert, ...state.alerts].slice(0, 30) }));
+        }
+      });
+      wsAlerts.connect();
+    }
+    if (!wsRAG) {
+      wsRAG = new WebSocketManager(`${WS_BASE}/ws/rag/`, (data) => {
+        if (data.event === "RAG_RETRIEVED" && data.result) {
+          set((state) => ({ ragResults: [data.result, ...state.ragResults].slice(0, 10) }));
+        }
+      });
+      wsRAG.connect();
+    }
   },
 
   disconnect: () => {
@@ -84,5 +128,8 @@ export const useIntelligenceStore = create<IntelligenceStore>((set) => ({
     wsPlanner?.disconnect(); wsPlanner = null;
     wsRisk?.disconnect(); wsRisk = null;
     wsChronos?.disconnect(); wsChronos = null;
+    wsCorrelation?.disconnect(); wsCorrelation = null;
+    wsAlerts?.disconnect(); wsAlerts = null;
+    wsRAG?.disconnect(); wsRAG = null;
   }
 }));

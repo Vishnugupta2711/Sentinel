@@ -120,9 +120,9 @@ docker-compose up --build -d
 | 1 | Go gateway with auth, WS proxy, middleware | ✅ |
 | 2 | World engine, timeline, gRPC services | ✅ |
 | 3 | Workers, permits, access control, shift mgmt | ✅ |
-| 4-5 | Safety/Intelligence, Vision/Edge (Python ML) | Pending |
+| 4-5 | Safety/Intelligence, Vision/Edge (Python ML) | ✅ |
 | 6 | Scala streaming pipeline (Kafka → enrich → CEP → ClickHouse) | ✅ |
-| 7 | **AI-Powered Industrial Safety Intelligence** | **In Progress** |
+| 7 | **AI-Powered Industrial Safety Intelligence** | ✅ |
 | 8 | Production polish (monitoring, caching, docs) | Pending |
 
 > Python now owns **only** ML/AI (Chronos, Risk, Compliance, Vision, Intelligence). All platform/API services are Go. All event streaming is Scala. ~47 redundant Python files deleted.

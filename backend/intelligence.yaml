@@ -1,4 +1,5 @@
 modules:
+  # Phase 4: Core ML/AI modules
   chronos:
     enabled: true
     priority: 10
@@ -23,7 +24,29 @@ modules:
     enabled: false
     priority: 60
     timeout: 1.0
+
+  # Phase 7: Multi-agent compound risk detection
+  gas_sensor:
+    enabled: true
+    priority: 5
+    timeout: 2.0
+  work_permit:
+    enabled: true
+    priority: 6
+    timeout: 2.0
+  shift:
+    enabled: true
+    priority: 7
+    timeout: 2.0
+  correlation:
+    enabled: true
+    priority: 15
+    timeout: 3.0
   rag:
-    enabled: false
+    enabled: true
     priority: 70
     timeout: 5.0
+  alerts:
+    enabled: true
+    priority: 80
+    timeout: 2.0
