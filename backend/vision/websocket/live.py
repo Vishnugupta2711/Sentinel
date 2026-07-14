@@ -8,9 +8,14 @@ logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/ws/vision", tags=["Vision WebSocket"])
 
 ws_vision_queues: List[asyncio.Queue] = []
+main_loop = None
 
 @router.websocket("/")
 async def vision_live_feed(websocket: WebSocket):
+    global main_loop
+    if main_loop is None:
+        main_loop = asyncio.get_running_loop()
+        
     await websocket.accept()
     q = asyncio.Queue()
     ws_vision_queues.append(q)
