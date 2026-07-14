@@ -75,12 +75,12 @@ All modules implemented in Python per the architecture (Python owns ML/AI). Upda
 | Compliance (violations, audit trail) | ✅ Done | 8 files: `backend/compliance/` (OISD/PPE rules, regulation KB, violation tracking) |
 | Planner (evacuation, rescue path planning) | ✅ Done | 9 files: `backend/planner/` (counterfactual simulation, action implementations, optimizer) |
 
-## Phase 5 — Vision & Edge
+## Phase 5 — Vision & Edge ✅
 | Module | Status |
 |---|---|
-| PPE detection (Python vision) | Pending |
-| Camera integration (RTSP ingest) | Pending |
-| Edge device management | Pending |
+| PPE detection (Python vision) | ✅ Done |
+| Camera integration (RTSP ingest) | ✅ Done |
+| Edge device management | ✅ Done |
 
 ## Phase 6 — Scala Streaming Pipeline ✅
 | Sub-phase | Module | Status |
