@@ -24,7 +24,6 @@ class ReadinessResponse(BaseModel):
     database: bool
     redis: bool
     kafka: bool
-    neo4j: bool
     qdrant: bool
 
 
@@ -73,7 +72,6 @@ async def get_readiness():
         database=True, # In-memory
         redis=True, # In-memory
         kafka=True, # In-memory bus
-        neo4j=registry.is_enabled("risk"), 
         qdrant=registry.is_enabled("rag")
     )
 

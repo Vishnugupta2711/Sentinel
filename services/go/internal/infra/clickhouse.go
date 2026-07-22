@@ -50,7 +50,18 @@ func NewClickHouseTimelineStore(chURL string, maxEntries int) *ClickHouseTimelin
 }
 
 func (s *ClickHouseTimelineStore) executeQuery(query string) error {
-	resp, err := http.Post(s.chURL, "text/plain", strings.NewReader(query))
+	req, err := http.NewRequest("POST", s.chURL, strings.NewReader(query))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "text/plain")
+	
+	if u, err := url.Parse(s.chURL); err == nil && u.User != nil {
+		pwd, _ := u.User.Password()
+		req.SetBasicAuth(u.User.Username(), pwd)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -143,8 +154,30 @@ func (s *ClickHouseTimelineStore) insertAsync(entry *pb.TimelineEntry) {
 		return
 	}
 
-	reqURL := fmt.Sprintf("%s/?query=INSERT+INTO+sentinel.timeline+FORMAT+JSONEachRow", s.chURL)
-	resp, err := http.Post(reqURL, "application/json", bytes.NewBuffer(data))
+	u, err := url.Parse(s.chURL)
+	if err != nil {
+		log.Printf("clickhouse: url parse error: %v", err)
+		return
+	}
+	
+	q := u.Query()
+	q.Set("query", "INSERT INTO sentinel.timeline FORMAT JSONEachRow")
+	u.RawQuery = q.Encode()
+	reqURL := u.String()
+
+	req, err := http.NewRequest("POST", reqURL, bytes.NewBuffer(data))
+	if err != nil {
+		log.Printf("clickhouse: request creation failed: %v", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	
+	if u.User != nil {
+		pwd, _ := u.User.Password()
+		req.SetBasicAuth(u.User.Username(), pwd)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Printf("clickhouse: insert failed: %v", err)
 		return
