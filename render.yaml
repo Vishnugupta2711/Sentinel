@@ -1,0 +1,114 @@
+services:
+  # ═══════════════════════════════════════════════════════════════
+  # FRONTEND (Public Web Service)
+  # ═══════════════════════════════════════════════════════════════
+  - type: web
+    name: sentinel-frontend
+    env: docker
+    rootDir: frontend
+    plan: free
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: "https://sentinel-gateway.onrender.com/api/v1" # Update after gateway deployment
+      - key: NEXT_PUBLIC_WS_URL
+        value: "wss://sentinel-gateway.onrender.com/ws" # Update after gateway deployment
+      - key: NODE_ENV
+        value: production
+
+  # ═══════════════════════════════════════════════════════════════
+  # GATEWAY (Public Web Service)
+  # ═══════════════════════════════════════════════════════════════
+  - type: web
+    name: sentinel-gateway
+    env: docker
+    rootDir: services/go
+    dockerCommand: "gateway"
+    plan: free
+    envVars:
+      - key: GATEWAY_PORT
+        value: "8080"
+      - key: UPSTREAM_URL
+        value: "http://sentinel-backend:8000"
+      - key: CORE_ADDR
+        value: "sentinel-core:9000"
+      - key: PORT
+        value: "8080"
+
+  # ═══════════════════════════════════════════════════════════════
+  # CORE (Private Service - Accessed internally by Gateway)
+  # ═══════════════════════════════════════════════════════════════
+  - type: pserv
+    name: sentinel-core
+    env: docker
+    rootDir: services/go
+    dockerCommand: "core"
+    plan: free
+    envVars:
+      - key: CORE_PORT
+        value: "9000"
+      - fromGroup: sentinel-shared-env
+
+  # ═══════════════════════════════════════════════════════════════
+  # BACKEND (Private Service - Accessed internally by Gateway)
+  # ═══════════════════════════════════════════════════════════════
+  - type: pserv
+    name: sentinel-backend
+    env: docker
+    rootDir: backend
+    plan: starter # ML engines usually crash on 512MB free tier RAM
+    envVars:
+      - key: ENV
+        value: production
+      - key: PORT
+        value: "8000"
+      - fromGroup: sentinel-shared-env
+
+  # ═══════════════════════════════════════════════════════════════
+  # SCALA STREAMING PIPELINE (Background Workers)
+  # ═══════════════════════════════════════════════════════════════
+  - type: worker
+    name: sentinel-scala-streams
+    env: docker
+    rootDir: services/scala
+    dockerCommand: "streams"
+    plan: free
+    envVars:
+      - fromGroup: sentinel-shared-env
+
+  - type: worker
+    name: sentinel-scala-cep
+    env: docker
+    rootDir: services/scala
+    dockerCommand: "cep"
+    plan: free
+    envVars:
+      - fromGroup: sentinel-shared-env
+
+  - type: worker
+    name: sentinel-scala-sink
+    env: docker
+    rootDir: services/scala
+    dockerCommand: "sink"
+    plan: free
+    envVars:
+      - fromGroup: sentinel-shared-env
+
+envGroups:
+  - name: sentinel-shared-env
+    envVars:
+      - key: REDIS_URL
+        sync: false
+      - key: CLICKHOUSE_URL
+        sync: false
+      - key: KAFKA_BROKER
+        sync: false
+      - key: CHROMA_HOST
+        value: "api.trychroma.com"
+      - key: CHROMA_API_KEY
+        sync: false
+      - key: CHROMA_TENANT
+        sync: false
+      - key: CHROMA_DATABASE
+        value: "Sentinal chromadb"
+      - key: SECURITY_JWT_SECRET
+        generateValue: true
