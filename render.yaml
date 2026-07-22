@@ -93,7 +93,7 @@ services:
     envVars:
       - fromGroup: sentinel-shared-env
 
-envGroups:
+envVarGroups:
   - name: sentinel-shared-env
     envVars:
       - key: REDIS_URL
