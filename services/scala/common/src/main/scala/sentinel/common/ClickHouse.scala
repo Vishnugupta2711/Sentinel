@@ -18,11 +18,17 @@ object ClickHouseClient:
           new ClickHouseClient:
             def execute(query: String): Task[String] =
               ZIO.attemptBlocking {
-                val request = HttpRequest.newBuilder()
+                val requestBuilder = HttpRequest.newBuilder()
                   .uri(uri)
                   .header("Content-Type", "text/plain")
                   .POST(HttpRequest.BodyPublishers.ofString(query))
-                  .build()
+
+                if (uri.getUserInfo != null) {
+                  val auth = java.util.Base64.getEncoder.encodeToString(uri.getUserInfo.getBytes("UTF-8"))
+                  requestBuilder.header("Authorization", s"Basic $$auth")
+                }
+
+                val request = requestBuilder.build()
                 http.send(request, HttpResponse.BodyHandlers.ofString()).body()
               }
         }

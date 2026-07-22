@@ -23,13 +23,7 @@ class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="APP_", env_file=".env", extra="ignore")
 
 
-class DatabaseSettings(BaseSettings):
-    url: str = "postgresql://user:password@localhost:5432/sentinel"
-    pool_size: int = 5
-    max_overflow: int = 10
-    echo: bool = False
 
-    model_config = SettingsConfigDict(env_prefix="DATABASE_", env_file=".env", extra="ignore")
 
 
 class RedisSettings(BaseSettings):
@@ -44,18 +38,16 @@ class KafkaSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="KAFKA_", env_file=".env", extra="ignore")
 
 
-class Neo4jSettings(BaseSettings):
-    url: str = "bolt://localhost:7687"
-    user: str = "neo4j"
-    password: str = "password"
-
-    model_config = SettingsConfigDict(env_prefix="NEO4J_", env_file=".env", extra="ignore")
 
 
-class QdrantSettings(BaseSettings):
-    url: str = "http://localhost:6333"
 
-    model_config = SettingsConfigDict(env_prefix="QDRANT_", env_file=".env", extra="ignore")
+class ChromaSettings(BaseSettings):
+    host: str = "api.trychroma.com"
+    api_key: str = ""
+    tenant: str = ""
+    database: str = "default"
+
+    model_config = SettingsConfigDict(env_prefix="CHROMA_", env_file=".env", extra="ignore")
 
 
 class GeminiSettings(BaseSettings):
@@ -89,15 +81,12 @@ class LoggingSettings(BaseSettings):
 
 class Settings(BaseSettings):
     app: AppSettings = AppSettings()
-    db: DatabaseSettings = DatabaseSettings()
     redis: RedisSettings = RedisSettings()
     kafka: KafkaSettings = KafkaSettings()
-    neo4j: Neo4jSettings = Neo4jSettings()
-    qdrant: QdrantSettings = QdrantSettings()
+    chroma: ChromaSettings = ChromaSettings()
     gemini: GeminiSettings = GeminiSettings()
     mapbox: MapboxSettings = MapboxSettings()
     security: SecuritySettings = SecuritySettings()
     logging: LoggingSettings = LoggingSettings()
-
 
 settings = Settings()

@@ -8,10 +8,24 @@ from rag.documents.kb import get_regulations, get_incidents
 logger = structlog.get_logger(__name__)
 
 
+import chromadb
+from core.config import settings
+
 class RAGEngine:
     def __init__(self):
         self.documents: List[RegulationDocument] = get_regulations()
         self.incidents: List[IncidentRecord] = get_incidents()
+        
+        # Initialize ChromaDB Client for future integration
+        if settings.chroma.api_key:
+            self.chroma_client = chromadb.HttpClient(
+                host=settings.chroma.host,
+                headers={"X-Chroma-Token": settings.chroma.api_key},
+                tenant=settings.chroma.tenant,
+                database=settings.chroma.database,
+            )
+        else:
+            self.chroma_client = None
 
     def reload_kb(self) -> None:
         self.documents = get_regulations()
